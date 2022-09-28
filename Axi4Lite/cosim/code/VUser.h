@@ -27,6 +27,8 @@
 #ifndef _VUSER_H_
 #define _VUSER_H_
 
+#include <stdint.h>
+
 #include "VProc.h"
 #include "VSched_pli.h"
 
@@ -48,7 +50,7 @@ extern int  VRead         (unsigned int addr, unsigned int *data, int delta, uns
 extern int  VSwap         (unsigned int addr, void         *data, int delta, unsigned int node);
 extern int  VTick         (unsigned int ticks, unsigned int node);
 extern void VRegInterrupt (int level, pVUserInt_t func, unsigned int node);
-extern void VRegUser      (pVUserCB_t func, uint32 node);
+extern void VRegUser      (pVUserCB_t func, uint32_t node);
 
 // In windows using the FLI, a \n in the printf format string causes 
 // two lines to be advanced, so replace new lines with carriage returns
@@ -64,13 +66,13 @@ extern void VRegUser      (pVUserCB_t func, uint32 node);
                               printf (formbuf, ##__VA_ARGS__);                     \
                               }
 # else
-# define VPrint(...) printf (__VA_ARGS__)
+# define VPrint(...) io_printf (__VA_ARGS__)
 # endif
 
 #ifdef DEBUG
 #define DebugVPrint VPrint
 #else
-#define DebugVPrint //
+#define DebugVPrint(...) {}
 
 #endif
 

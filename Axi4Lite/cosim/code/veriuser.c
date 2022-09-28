@@ -19,43 +19,17 @@
 // You should have received a copy of the GNU General Public License
 // along with VProc. If not, see <http://www.gnu.org/licenses/>.
 //
-// $Id: veriuser.c,v 1.5 2021/05/15 07:45:18 simon Exp $
-// $Source: /home/simon/CVS/src/HDL/VProc/code/veriuser.c,v $
-//
 //=====================================================================
 // 
 // PLI task/function registration table for plitask
 // 
 //=====================================================================
 
-#include "VSched_pli.h"
+#include "veriuser.h"
 
-#ifndef VPROC_PLI_VPI
-
-#ifndef MEM_MODEL_TF_TBL
-#define MEM_MODEL_TF_TBL {0},
-#endif
-
-char *veriuser_version_str = "Virtual Processor PLI V0.1 Copyright (c) 2005 Simon Southwell.";
-
+// Stub off the pli function table to satisfy ModelSim's PLI
 s_tfcell veriusertfs[] =
 {
-    VPROC_TF_TBL,
-    MEM_MODEL_TF_TBL
     {0} 
 };
 
-p_tfcell bootstrap ()
-{
-    return veriusertfs;
-}
-
-# ifdef ICARUS
-static void veriusertfs_register(void)
-{
-    veriusertfs_register_table(veriusertfs);
-}
-
-void (*vlog_startup_routines[])() = { &veriusertfs_register, 0 };
-# endif
-#endif

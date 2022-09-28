@@ -66,11 +66,13 @@ VPROC_RTN_TYPE VInit (VINIT_PARAMS)
     // Set up semaphores for this node
     debug_io_printf("VInit(): initialising semaphores for node %d\n", node);
 
-    if (sem_init(&(ns[node]->snd), 0, 0) == -1) {
+    if (sem_init(&(ns[node]->snd), 0, 0) == -1)
+    {
         io_printf("***Error: VInit() failed to initialise semaphore\n");
         exit(1);
     }
-    if (sem_init(&(ns[node]->rcv), 0, 0) == -1) {
+    if (sem_init(&(ns[node]->rcv), 0, 0) == -1)
+    {
         io_printf("***Error: VInit() failed to initialise semaphore\n");
         exit(1);
     }
@@ -125,7 +127,8 @@ VPROC_RTN_TYPE VSched (VSCHED_PARAMS)
     sem_wait(&(ns[node]->snd));
 
     // Update outputs of $vsched task
-    if (ns[node]->send_buf.ticks >= DELTA_CYCLE) {
+    if (ns[node]->send_buf.ticks >= DELTA_CYCLE)
+    {
         VPDataOut_int = ns[node]->send_buf.data_out;
         VPAddr_int    = ns[node]->send_buf.addr;
         VPRw_int      = ns[node]->send_buf.rw;

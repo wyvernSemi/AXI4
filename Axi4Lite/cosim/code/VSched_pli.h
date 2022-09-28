@@ -28,9 +28,8 @@
 //
 //=====================================================================
 
-#include "string.h"
+#include <string.h>
 #include "veriuser.h"
-#include "vpi_user.h"
 
 #ifdef INCL_VLOG_MEM_MODEL
 #include "mem_model.h"
@@ -44,9 +43,6 @@
 #  else
 #  define debug_io_printf //
 #  endif
-
-#define VPROC_TF_TBL_SIZE  0
-#define VPROC_TF_TBL       {0}
 
 #define VINIT_PARAMS       int  node
 #define VSCHED_PARAMS      int  node, int Interrupt, int VPDataIn, int* VPDataOut, int* VPAddr, int* VPRw,int* VPTicks

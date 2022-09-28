@@ -2,7 +2,7 @@
 //
 // VProc.h                                            Date: 2004/12/13 
 //
-// Copyright (c) 2004-2010 Simon Southwell.
+// Copyright (c) 2004-2022 Simon Southwell.
 //
 // This file is part of VProc.
 //
@@ -18,9 +18,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with VProc. If not, see <http://www.gnu.org/licenses/>.
-//
-// $Id: VProc.h,v 1.3 2016/09/28 07:12:00 simon Exp $
-// $Source: /home/simon/CVS/src/HDL/VProc/code/VProc.h,v $
 //
 //=====================================================================
 //
@@ -59,11 +56,6 @@
 #endif
 
 
-#define M_TICK                  0x100
-#define M_IO                    0x200
-#define M_STOP                  0x300
-#define M_PRINT                 0x400
-
 #define V_IDLE                  0
 #define V_WRITE                 1
 #define V_READ                  2
@@ -78,28 +70,13 @@
 
 #define UNDEF                   -1
 
-#define VPNODENUM_ARG           1
-#define VPINTERRUPT_ARG         2
-#define VPINDEX_ARG             2
-#define VPDATAIN_ARG            3
-#define VPDATAOUT_ARG           4
-#define VPADDR_ARG              5
-#define VPRW_ARG                6
-#define VPTICKS_ARG             7
-#define VPRESTORE_ARG           8
-
 #define DEFAULT_STR_BUF_SIZE    32
 
 #define MIN_INTERRUPT_LEVEL     1
 #define MAX_INTERRUPT_LEVEL     7
 
-#define MONITOR_SEG_SIZE        4096 
-
-typedef unsigned short          uint16;
-typedef unsigned int            uint32;
-typedef unsigned long long      uint64;
-
-typedef struct {
+typedef struct
+{
     unsigned int        addr;
     unsigned int        data_out;
     unsigned int        rw;
@@ -107,19 +84,12 @@ typedef struct {
     int                 ticks;
 } send_buf_t, *psend_buf_t;
 
-typedef struct {
+typedef struct
+{
     unsigned int        data_in;
     unsigned int        interrupt;
 } rcv_buf_t, *prcv_buf_t;
 
-typedef struct {
-    int                 VPDataIn;
-    int                 VPDataOut;
-    int                 VPAddr;
-    int                 VPTicks;
-    short               VPRw;
-    short               Interrupt;
-} monitor_t, *pmonitor_t;
 
 // Shared object handle type
 typedef void * handle_t;
@@ -128,7 +98,8 @@ typedef void * handle_t;
 typedef int  (*pVUserInt_t)      (void);
 typedef int  (*pVUserCB_t)       (int);
 
-typedef struct {
+typedef struct
+{
     sem_t               snd;
     sem_t               rcv;
     send_buf_t          send_buf;

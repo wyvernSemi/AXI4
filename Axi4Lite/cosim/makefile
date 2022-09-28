@@ -49,8 +49,12 @@ USER_C_BASE     = $(notdir $(filter %c, ${USER_C}))
 MEM_CPP_BASE    = $(notdir $(filter %cpp, ${MEM_C}))
 MEM_C_BASE      = $(notdir $(filter %c, ${MEM_C}))
 
+SRC_INCL        = $(wildcard ${SRCDIR}/*.h)
+USER_INCL       = $(wildcard ${USRCDIR}/*.h)
+
 VOBJS           = ${addprefix ${VOBJDIR}/, ${USER_C_BASE:%.c=%.o} ${USER_CPP_BASE:%.cpp=%.o} \
                   ${VPROC_C:%.c=%.o} ${MEM_C_BASE:%.c=%.o} ${MEM_CPP_BASE:%.cpp=%.o}}
+                  
 
 USRFLAGS        = 
 
@@ -109,7 +113,7 @@ ${VOBJDIR}/%.o: ${USRCDIR}/%.cpp
 #${VOBJDIR}/%.o: ${MEMMODELDIR}/%.cpp ${MEMMODELDIR}/*.h
 #	@${C++} -c ${CFLAGS} $< -o $@
 
-${VLIB} : ${VOBJS} ${VOBJDIR}
+${VLIB} : ${VOBJS} ${VOBJDIR} ${SRC_INCL} ${USER_INCL}
 	@ar cr ${VLIB} ${VOBJS}
 
 ${VOBJS}: | ${VOBJDIR}
