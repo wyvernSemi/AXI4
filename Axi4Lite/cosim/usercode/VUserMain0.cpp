@@ -40,11 +40,8 @@
 #include <cstdlib>
 #include <cstdint>
 
-// Import VProc user API (C linkage)
-extern "C"
-{
+// Import VProc user API
 #include "VUser.h"
-}
 
 // I am node 0 context
 static int node  = 0;
@@ -58,7 +55,6 @@ static int node  = 0;
 // ------------------------------------------------------------------------------
 extern "C" void VUserMain0()
 {
-
     VPrint("VUserMain0(): node=%d\n", node);
 
     // Use node number plus 1 as the seed.
@@ -71,15 +67,15 @@ extern "C" void VUserMain0()
         
         // Get read/write and address from random value
         uint32_t rnw  = (uint32_t)(randval & 0x1UL);        // Bit 0
-        uint32_t addr = (uint32_t)(randval & 0xfffffffcUL); // Bits 31:2
+        uint64_t addr = (uint32_t)(randval & 0xfffffffcUL); // Bits 31:2
 
         // Do a read
         if (rnw)
         {
             uint32_t rdata;
             
-            // Do a read and place returned data in rdata
-            VRead(addr, &rdata, NO_DELTA_CYCLE, node);
+            // Do a 32-bit read and place returned data in rdata
+            VTransRead(addr, &rdata);
             
             // Display read transaction information
             VPrint("VUserMain0: read %08X from address %08X\n", rdata, addr);
@@ -90,8 +86,8 @@ extern "C" void VUserMain0()
             // Generate some random data
             uint32_t wdata = random() & 0xffffffffUL;
             
-            // Do a write transaction
-            VWrite(addr, wdata, NO_DELTA_CYCLE, node);
+            // Do a 32-bit write transaction
+            VTransWrite(addr, wdata);
             
             // Display write trabsaction display information
             VPrint("VUserMain0: wrote %08X to address %08X\n", wdata, addr);

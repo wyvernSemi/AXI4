@@ -29,8 +29,20 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+#define EXTC  "C"
+extern "C"
+{
+#else
+#define EXTC
+#endif
+
 #include "VProc.h"
 #include "VSched_pli.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #define DELTA_CYCLE     -1
 #define NO_DELTA_CYCLE  0
@@ -44,13 +56,25 @@
 typedef void *(*pThreadFunc_t)(void *);
 
 // VUser function prototypes
-extern int  VUser         (int node);
-extern int  VWrite        (unsigned int addr, unsigned int  data, int delta, unsigned int node);
-extern int  VRead         (unsigned int addr, unsigned int *data, int delta, unsigned int node);
-extern int  VSwap         (unsigned int addr, void         *data, int delta, unsigned int node);
-extern int  VTick         (unsigned int ticks, unsigned int node);
-extern void VRegInterrupt (int level, pVUserInt_t func, unsigned int node);
-extern void VRegUser      (pVUserCB_t func, uint32_t node);
+#ifdef __cplusplus
+extern int  VWrite        (uint64_t addr, uint32_t  data, int delta, uint32_t node);
+extern int  VRead         (uint64_t addr, uint32_t *data, int delta, uint32_t node);
+
+extern int  VTransWrite   (uint64_t addr, uint8_t   data, int prot = 0, uint32_t node = 0);
+extern int  VTransRead    (uint64_t addr, uint8_t  *data, int prot = 0, uint32_t node = 0);
+extern int  VTransWrite   (uint64_t addr, uint16_t  data, int prot = 0, uint32_t node = 0);
+extern int  VTransRead    (uint64_t addr, uint16_t *data, int prot = 0, uint32_t node = 0);
+extern int  VTransWrite   (uint64_t addr, uint32_t  data, int prot = 0, uint32_t node = 0);
+extern int  VTransRead    (uint64_t addr, uint32_t *data, int prot = 0, uint32_t node = 0);
+extern int  VTransWrite   (uint64_t addr, uint64_t  data, int prot = 0, uint32_t node = 0);
+extern int  VTransRead    (uint64_t addr, uint64_t *data, int prot = 0, uint32_t node = 0);
+#endif
+
+extern EXTC int  VUser         (int node);
+extern EXTC int  VTick         (uint32_t ticks, uint32_t node);
+extern EXTC void VRegInterrupt (int level, pVUserInt_t func, uint32_t node);
+extern EXTC void VRegUser      (pVUserCB_t func, uint32_t node);
+extern EXTC void VRegUser      (pVUserCB_t func, uint32_t node);
 
 // In windows using the FLI, a \n in the printf format string causes 
 // two lines to be advanced, so replace new lines with carriage returns

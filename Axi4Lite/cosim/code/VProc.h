@@ -75,18 +75,42 @@
 #define MIN_INTERRUPT_LEVEL     1
 #define MAX_INTERRUPT_LEVEL     7
 
+
+typedef enum trans_type_e
+{
+  trans_wr_byte           = 0,
+  trans_wr_hword          = 1,
+  trans_wr_word           = 2,
+  trans_wr_dword          = 3,
+  trans_wr_qword          = 4,
+  trans_rd_byte           = 8,
+  trans_rd_hword          = 9,
+  trans_rd_word           = 10,
+  trans_rd_dword          = 11,
+  trans_rd_qword          = 12
+} trans_type_e;
+
+typedef enum arch_e
+{
+    arch32,
+    arch64,
+    arch128
+} arch_e;
+
 typedef struct
 {
-    unsigned int        addr;
-    unsigned int        data_out;
-    unsigned int        rw;
-    void                *data_p;
+    trans_type_e        type;
+    uint32_t            prot;
+    uint32_t            addr;
+    uint8_t             data[16];
+    uint32_t            rw;
     int                 ticks;
 } send_buf_t, *psend_buf_t;
 
 typedef struct
 {
     unsigned int        data_in;
+    void*               data;
     unsigned int        interrupt;
 } rcv_buf_t, *prcv_buf_t;
 

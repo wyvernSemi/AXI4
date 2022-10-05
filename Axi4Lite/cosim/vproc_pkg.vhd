@@ -46,14 +46,6 @@ package vproc_pkg is
   );
   attribute foreign of VProcUser : procedure is "VProcUser VProc.so";
 
-  procedure VAccess (
-    node      : in  integer;
-    idx       : in  integer;
-    VPDataIn  : in  integer;
-    VPDataOut : out integer
-  );
-  attribute foreign of VAccess : procedure is "VAccess VProc.so";
-
 end;
 
 package body vproc_pkg is
@@ -86,14 +78,14 @@ package body vproc_pkg is
     report "ERROR: foreign subprogram out_params not called";
   end;
 
-  procedure VAccess (
-    node      : in  integer;
-    idx       : in  integer;
-    VPDataIn  : in  integer;
-    VPDataOut : out integer
-  ) is
-  begin
-    report "ERROR: foreign subprogram out_params not called";
-  end;
+--  procedure VAccess (
+--    node      : in  integer;
+--    idx       : in  integer;
+--    VPDataIn  : in  integer;
+--    VPDataOut : out integer
+--  ) is
+--  begin
+--    report "ERROR: foreign subprogram out_params not called";
+--  end;
 
 end;

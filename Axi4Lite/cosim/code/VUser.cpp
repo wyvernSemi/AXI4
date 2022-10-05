@@ -31,7 +31,10 @@
 
 #include <stdint.h>
 #include <errno.h>
+extern "C" 
+{
 #include "VProc.h"
+}
 #include "VUser.h"
 
 static void VUserInit (int node);
@@ -40,7 +43,7 @@ static void VUserInit (int node);
 // Entry point for new user process. Creates a new thread
 // calling VUserInit().
 //
-int VUser (int node)
+extern "C" int VUser (int node)
 {
     pthread_t thread;
     int status;
@@ -94,7 +97,7 @@ static void VUserInit (int node)
 
         if ((VUserMain_func = (pVUserMain_t) dlsym(hdl, funcname)) == NULL)
         {
-            io_printf("***Error: failed to find user code symbol %s (VUserInit)\n", funcname);
+            printf("***Error: failed to find user code symbol %s (VUserInit)\n", funcname);
             exit(1);
         }
     }
@@ -105,7 +108,7 @@ static void VUserInit (int node)
     debug_io_printf("VUserInit(): waiting for first message semaphore rcv[%d]\n", node);
     if ((status = sem_wait(&(ns[node]->rcv))) == -1)
     {
-        io_printf("***Error: bad sem_post status (%d) on node %d (VUserInit)\n", status, node);
+        printf("***Error: bad sem_post status (%d) on node %d (VUserInit)\n", status, node);
         exit(1);
     }
 
@@ -130,7 +133,7 @@ static void VExch (psend_buf_t psbuf, prcv_buf_t prbuf, uint32_t node)
     debug_io_printf("VExch(): setting snd[%d] semaphore\n", node);
     if ((status = sem_post(&(ns[node]->snd))) == -1)
     {
-        io_printf("***Error: bad sem_post status (%d) on node %d (VExch)\n", status, node);
+        printf("***Error: bad sem_post status (%d) on node %d (VExch)\n", status, node);
         exit(1);
     }
 
@@ -149,13 +152,13 @@ static void VExch (psend_buf_t psbuf, prcv_buf_t prbuf, uint32_t node)
 
             if (prbuf->interrupt >= 8)
             {
-                io_printf("***Error: invalid interrupt level %d (VExch)\n", prbuf->interrupt);
+                printf("***Error: invalid interrupt level %d (VExch)\n", prbuf->interrupt);
                 exit(1);
             }
 
             if (ns[node]->VInt_table[prbuf->interrupt] == NULL)
             {
-                io_printf("***Error: interrupt to unregistered level %d on node %d (VExch)\n", prbuf->interrupt, node);
+                printf("***Error: interrupt to unregistered level %d on node %d (VExch)\n", prbuf->interrupt, node);
                 exit(1);
             }
 
@@ -168,7 +171,7 @@ static void VExch (psend_buf_t psbuf, prcv_buf_t prbuf, uint32_t node)
             debug_io_printf("VExch(): setting snd[%d] semaphore (interrupt)\n", node);
             if ((status = sem_post(&(ns[node]->snd))) == -1)
             {
-                io_printf("***Error: bad sem_post status (%d) on node %d (VExch)\n", status, node);
+                printf("***Error: bad sem_post status (%d) on node %d (VExch)\n", status, node);
                 exit(1);
             }
         }
@@ -183,15 +186,18 @@ static void VExch (psend_buf_t psbuf, prcv_buf_t prbuf, uint32_t node)
 /////////////////////////////////////////////////////////////
 // Invokes a write message exchange
 //
-int VWrite (unsigned int Addr, unsigned int Data, int Delta, uint32_t node)
+int VWrite (uint64_t Addr, uint32_t Data, int Delta, uint32_t node)
 {
     rcv_buf_t rbuf;
     send_buf_t sbuf;
-
-    sbuf.addr     = Addr;
-    sbuf.data_out = Data;
-    sbuf.rw       = V_WRITE;
-    sbuf.ticks    = Delta ? DELTA_CYCLE : 0;
+    
+    sbuf.type  = trans_wr_word;
+    sbuf.addr  = Addr;
+    sbuf.prot  = 0;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = Delta ? DELTA_CYCLE : 0;
+    
+    *((uint32_t*)sbuf.data) = Data;
 
     VExch(&sbuf, &rbuf, node);
 
@@ -201,15 +207,16 @@ int VWrite (unsigned int Addr, unsigned int Data, int Delta, uint32_t node)
 /////////////////////////////////////////////////////////////
 // Invokes a read message exchange
 //
-int VRead (unsigned int Addr, unsigned int *rdata, int Delta, uint32_t node)
+int VRead (uint64_t Addr, uint32_t *rdata, int Delta, uint32_t node)
 {
     rcv_buf_t rbuf;
     send_buf_t sbuf;
 
-    sbuf.addr     = Addr;
-    sbuf.data_out = 0;
-    sbuf.rw       = V_READ;
-    sbuf.ticks    = Delta ? DELTA_CYCLE : 0;
+    sbuf.type  = trans_rd_word;
+    sbuf.addr  = Addr;
+    sbuf.prot  = 0;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = Delta ? DELTA_CYCLE : 0;
 
     VExch(&sbuf, &rbuf, node);
 
@@ -219,20 +226,85 @@ int VRead (unsigned int Addr, unsigned int *rdata, int Delta, uint32_t node)
 }
 
 /////////////////////////////////////////////////////////////
-// Invokes a array message exchange
+// Invokes a 32-bit write transaction exchange
 //
-int VSwap (unsigned int Addr, void *data, int Delta, uint32_t node)
+int VTransWrite (uint64_t Addr, uint32_t Data, int prot, uint32_t node)
+{
+    rcv_buf_t rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans_wr_word;
+    sbuf.addr  = Addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint64_t*)sbuf.data) = Data;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in ;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 32-bit read transaction exchange
+//
+int VTransRead (uint64_t Addr, uint32_t *rdata, int prot, uint32_t node)
 {
     rcv_buf_t rbuf;
     send_buf_t sbuf;
 
-    sbuf.addr     = Addr;
-    sbuf.data_out = 0;
-    sbuf.data_p   = data;
-    sbuf.rw       = V_SWAP;
-    sbuf.ticks    = Delta ? DELTA_CYCLE : 0;
+    sbuf.type  = trans_rd_word;
+    sbuf.addr  = Addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
 
     VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in;
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 64-bit write transaction exchange
+//
+int VTransWrite (uint64_t Addr, uint64_t Data, int prot, uint32_t node)
+{
+    rcv_buf_t rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans_wr_dword;
+    sbuf.addr  = Addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint64_t*)sbuf.data) = Data;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in ;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 64-bit read transaction exchange
+//
+int VTransRead (uint64_t Addr, uint64_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t    rbuf;
+    send_buf_t   sbuf;
+
+    sbuf.type  = trans_rd_dword;
+    sbuf.addr  = Addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks =  0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata     = rbuf.data_in;
 
     return 0;
 }
@@ -240,13 +312,11 @@ int VSwap (unsigned int Addr, void *data, int Delta, uint32_t node)
 /////////////////////////////////////////////////////////////
 // Invokes a tick message exchange
 //
-int VTick (unsigned int ticks, uint32_t node)
+int VTick (uint32_t ticks, uint32_t node)
 {
     rcv_buf_t rbuf;
     send_buf_t sbuf;
 
-    sbuf.addr     = 0;
-    sbuf.data_out = 0;
     sbuf.rw       = V_IDLE;
     sbuf.ticks    = ticks;
 
@@ -264,7 +334,7 @@ void VRegInterrupt (int level, pVUserInt_t func, uint32_t node)
 
     if (level < MIN_INTERRUPT_LEVEL || level >= MAX_INTERRUPT_LEVEL)
     {
-        io_printf("***Error: attempt to register an out of range interrupt level (VRegInterrupt)\n");
+        printf("***Error: attempt to register an out of range interrupt level (VRegInterrupt)\n");
         exit(1);
     }
 

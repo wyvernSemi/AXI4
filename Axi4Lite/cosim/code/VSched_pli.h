@@ -47,7 +47,6 @@
 #define VINIT_PARAMS       int  node
 #define VSCHED_PARAMS      int  node, int Interrupt, int VPDataIn, int* VPDataOut, int* VPAddr, int* VPRw,int* VPTicks
 #define VPROCUSER_PARAMS   int  node, int value
-#define VACCESS_PARAMS     int  node, int  idx, int VPDataIn, int* VPDataOut
 #define VHALT_PARAMS       int, int
 
 #define VPROC_RTN_TYPE     void
@@ -55,7 +54,6 @@
 extern VPROC_RTN_TYPE VInit     (VINIT_PARAMS);
 extern VPROC_RTN_TYPE VSched    (VSCHED_PARAMS);
 extern VPROC_RTN_TYPE VProcUser (VPROCUSER_PARAMS);
-extern VPROC_RTN_TYPE VAccess   (VACCESS_PARAMS);
 extern int            VHalt     (VHALT_PARAMS);
 
 #endif

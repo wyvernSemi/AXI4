@@ -32,6 +32,7 @@
 //=====================================================================
 
 #include <stdio.h>
+#include <stdint.h>
 #include <errno.h>
 #include <unistd.h>
 #include "VProc.h"
@@ -129,10 +130,21 @@ VPROC_RTN_TYPE VSched (VSCHED_PARAMS)
     // Update outputs of $vsched task
     if (ns[node]->send_buf.ticks >= DELTA_CYCLE)
     {
-        VPDataOut_int = ns[node]->send_buf.data_out;
-        VPAddr_int    = ns[node]->send_buf.addr;
-        VPRw_int      = ns[node]->send_buf.rw;
-        VPTicks_int   = ns[node]->send_buf.ticks;
+
+        switch(ns[node]->send_buf.type)
+        {
+            case trans_wr_word:
+            case trans_rd_word:
+              VPDataOut_int = ((uint32_t*)ns[node]->send_buf.data)[0];
+              VPAddr_int    = (uint32_t)((ns[node]->send_buf.addr) & 0xffffffffULL);
+              VPRw_int      = ns[node]->send_buf.rw;
+              VPTicks_int   = ns[node]->send_buf.ticks;
+              break;
+
+            default:
+              break;
+        }
+
         debug_io_printf("VSched(): VPTicks=%08x\n", VPTicks_int);
     }
 
@@ -162,8 +174,10 @@ VPROC_RTN_TYPE VProcUser(VPROCUSER_PARAMS)
 // Called on $vaccess PLI task. Exchanges block data between
 // C and verilog domain
 //
+/*
 VPROC_RTN_TYPE VAccess(VACCESS_PARAMS)
 {
-    *VPDataOut                               = ((int *) ns[node]->send_buf.data_p)[idx];
+    *VPDataOut                               = ((int *) ns[node]->send_buf.attributes)[idx];
     ((int *) ns[node]->send_buf.data_p)[idx] = VPDataIn;
 }
+*/
