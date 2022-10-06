@@ -159,6 +159,57 @@ VPROC_RTN_TYPE VSched (VSCHED_PARAMS)
 }
 
 /////////////////////////////////////////////////////////////
+// Main routine called whenever VTrans procedure invoked on
+// clock edge of scheduled cycle.
+//
+
+VPROC_RTN_TYPE VTrans (VTRANS_PARAMS)
+{
+
+    int VPDataOut_int, VPAddr_int, VPRw_int, VPTicks_int;
+
+    // Sample inputs and update node state
+    ns[node]->rcv_buf.data_in   = VPDataIn;
+    ns[node]->rcv_buf.interrupt = Interrupt;
+
+    // Send message to VUser with VPDataIn value
+    debug_io_printf("VTrans(): setting rcv[%d] semaphore\n", node);
+    sem_post(&(ns[node]->rcv));
+
+    // Wait for a message from VUser process with output data
+    debug_io_printf("VTrans(): waiting for snd[%d] semaphore\n", node);
+    sem_wait(&(ns[node]->snd));
+
+    // Update outputs of VTrans procedure
+    if (ns[node]->send_buf.ticks >= DELTA_CYCLE)
+    {
+
+        switch(ns[node]->send_buf.type)
+        {
+            case trans_wr_word:
+            case trans_rd_word:
+              VPDataOut_int = ((uint32_t*)ns[node]->send_buf.data)[0];
+              VPAddr_int    = (uint32_t)((ns[node]->send_buf.addr) & 0xffffffffULL);
+              VPRw_int      = ns[node]->send_buf.rw;
+              break;
+
+            default:
+              break;
+        }
+
+        debug_io_printf("VTrans(): VPTicks=%08x\n", VPTicks_int);
+    }
+
+    debug_io_printf("VTrans(): returning to simulation from node %d\n\n", node);
+
+    // Export outputs over FLI
+    *VPDataOut        = VPDataOut_int;
+    *VPAddr           = VPAddr_int;
+    *VPRw             = VPRw_int;;
+
+}
+
+/////////////////////////////////////////////////////////////
 // Calls a user registered function (if available) when
 // $vprocuser(node) called in verilog
 //

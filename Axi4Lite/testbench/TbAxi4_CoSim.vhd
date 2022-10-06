@@ -147,8 +147,7 @@ begin
                    ReadData,
                    Data,
                    Address,
-                   RnW,
-                   Ticks);
+                   RnW);
 
       -- Update counts and check on reads
       case OperationType'val(RnW) is

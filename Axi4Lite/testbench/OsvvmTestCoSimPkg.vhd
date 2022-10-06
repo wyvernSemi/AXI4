@@ -55,11 +55,11 @@ use work.vproc_pkg.all;
 
 package OsvvmTestCoSimPkg is
 
-constant WEbit           : integer := 0;
-constant RDbit           : integer := 1;
-constant NodeNum         : integer := 0 ; -- Always use node 0 for now
-constant ADDR_WIDTH      : integer := 32; -- Only 32 bits supported
-constant DATA_WIDTH      : integer := 32; -- Only 32 bits supported
+constant WEbit           : integer := 0 ;
+constant RDbit           : integer := 1 ;
+constant NodeNum         : integer := 0  ; -- Always use node 0 for now
+constant ADDR_WIDTH      : integer := 32 ; -- Only 32 bits supported
+constant DATA_WIDTH      : integer := 32 ; -- Only 32 bits supported
 
   ------------------------------------------------------------
   ------------------------------------------------------------
@@ -71,8 +71,14 @@ procedure CoSimAccess (
   variable RdData          : inout  std_logic_vector ;
   variable Data            : out    std_logic_vector ;
   variable Address         : out    std_logic_vector ;
-  variable RnW             : out    integer;
-  variable Ticks           : out    integer
+  variable RnW             : out    integer
+  ) ;
+
+  ------------------------------------------------------------
+  ------------------------------------------------------------
+procedure CoSimTrans (
+  signal   ManagerRec      : inout  AddressBusRecType ;
+  variable RdData          : inout  std_logic_vector
   ) ;
 
 end package OsvvmTestCoSimPkg ;
@@ -98,8 +104,7 @@ procedure CoSimAccess (
   variable RdData          : inout  std_logic_vector ;
   variable Data            : out    std_logic_vector ;
   variable Address         : out    std_logic_vector ;
-  variable RnW             : out    integer;
-  variable Ticks           : out    integer
+  variable RnW             : out    integer
   ) is
 
   type     OperationType     is (WRITE_OP, READ_OP) ;
@@ -120,13 +125,12 @@ procedure CoSimAccess (
     RdDataSamp  := to_integer(signed(RdData));
 
     -- Call VSched
-    VSched(NodeNum,
+    VTrans(NodeNum,
            0, -- interrupts
            RdDataSamp,
            VPDataOut,
            VPAddr,
-           VPRW,
-           Ticks) ;
+           VPRW) ;
 
     Address       := std_logic_vector(to_signed(VPAddr,    ADDR_WIDTH)) ;
     Data          := std_logic_vector(to_signed(VPDataOut, DATA_WIDTH)) ;
@@ -156,5 +160,45 @@ procedure CoSimAccess (
     end if;
 
   end procedure CoSimAccess ;
+
+  ------------------------------------------------------------
+  ------------------------------------------------------------
+
+procedure CoSimTrans (
+  -- Transaction  interface
+  signal   ManagerRec      : inout  AddressBusRecType ;
+  variable RdData          : inout  std_logic_vector
+  ) is
+
+  variable VPDataOut       : integer ;
+  variable VPAddr          : integer ;
+  variable VPRW            : integer ;
+  variable VPDataIn        : integer ;
+
+  variable WrData          : std_logic_vector (DATA_WIDTH-1 downto 0);
+  variable Address         : std_logic_vector (ADDR_WIDTH-1 downto 0);
+  variable Interrupt       : integer := 0 ;
+
+  begin
+
+    -- Sample the read data from last access, saved in RdData inout port
+    VPDataIn  := to_integer(signed(RdData));
+
+    -- Call VTrans to generate a new access
+    VTrans(NodeNum, Interrupt, VPDataIn, VPDataOut, VPAddr, VPRW) ;
+
+    -- Convert address and write data to std_logic_vectors
+    Address       := std_logic_vector(to_signed(VPAddr,    ADDR_WIDTH)) ;
+    WrData        := std_logic_vector(to_signed(VPDataOut, DATA_WIDTH)) ;
+
+    -- Do the operation using the transaction interface
+    if to_unsigned(VPRW, 2)(RDbit)
+    then
+      Read  (ManagerRec, Address, RdData) ;
+    else
+      Write (ManagerRec, Address, WrData) ;
+    end if;
+
+  end procedure CoSimTrans ;
 
 end package body OsvvmTestCoSimPkg ;

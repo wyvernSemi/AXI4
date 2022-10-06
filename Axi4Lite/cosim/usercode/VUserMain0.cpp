@@ -53,11 +53,12 @@ static int node  = 0;
 // then you'll need to read in a configuration file.
 //
 // ------------------------------------------------------------------------------
+
 extern "C" void VUserMain0()
 {
     VPrint("VUserMain0(): node=%d\n", node);
 
-    // Use node number plus 1 as the seed.
+    // Use node number plus 1 as the ransom number generator seed.
     srandom(node + 1);
 
     while (true)
