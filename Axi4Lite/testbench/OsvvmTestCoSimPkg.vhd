@@ -58,8 +58,10 @@ package OsvvmTestCoSimPkg is
 constant WEbit           : integer := 0 ;
 constant RDbit           : integer := 1 ;
 constant NodeNum         : integer := 0  ; -- Always use node 0 for now
-constant ADDR_WIDTH      : integer := 32 ; -- Only 32 bits supported
-constant DATA_WIDTH      : integer := 32 ; -- Only 32 bits supported
+constant ADDR_WIDTH      : integer := 32 ;
+constant DATA_WIDTH      : integer := 32 ;
+constant ADDR_WIDTH_MAX  : integer := 64 ;
+constant DATA_WIDTH_MAX  : integer := 64 ;
 
   ------------------------------------------------------------
   ------------------------------------------------------------
@@ -114,9 +116,15 @@ procedure CoSimAccess (
   constant READ_OP_INDEX   : integer := OperationType'pos(READ_OP) ;
 
   variable VPDataOut       : integer ;
+  variable VPDataOutHi     : integer ;
   variable VPAddr          : integer ;
+  variable VPAddrHi        : integer ;
   variable VPRW            : integer ;
   variable RdDataSamp      : integer ;
+  variable RdDataSampHi    : integer ;
+  
+  variable VPDataWidth     : integer ;
+  variable VPAddrWidth     : integer ;
 
   variable OperationSlv    : OperationSlvType;
 
@@ -128,8 +136,13 @@ procedure CoSimAccess (
     VTrans(NodeNum,
            0, -- interrupts
            RdDataSamp,
+           RdDataSampHi,
            VPDataOut,
+           VPDataOutHi,
+           VPDataWidth,
            VPAddr,
+           VPAddrHi,
+           VPAddrWidth,
            VPRW) ;
 
     Address       := std_logic_vector(to_signed(VPAddr,    ADDR_WIDTH)) ;
@@ -171,32 +184,89 @@ procedure CoSimTrans (
   ) is
 
   variable VPDataOut       : integer ;
+  variable VPDataOutHi     : integer ;
   variable VPAddr          : integer ;
+  variable VPAddrHi        : integer ;
   variable VPRW            : integer ;
   variable VPDataIn        : integer ;
+  variable VPDataInHi      : integer ;
+  
+  variable VPDataWidth     : integer ;
+  variable VPAddrWidth     : integer ;
 
-  variable WrData          : std_logic_vector (DATA_WIDTH-1 downto 0);
-  variable Address         : std_logic_vector (ADDR_WIDTH-1 downto 0);
-  variable Interrupt       : integer := 0 ;
+  variable WrData          : std_logic_vector (DATA_WIDTH_MAX-1 downto 0);
+  variable Address         : std_logic_vector (ADDR_WIDTH_MAX-1 downto 0);
+  variable Interrupt       : integer := 0 ; -- currently unconnected
 
   begin
 
     -- Sample the read data from last access, saved in RdData inout port
-    VPDataIn  := to_integer(signed(RdData));
+    if RdData'length > 32 then
+      VPDataIn   := to_integer(signed(RdData(31 downto  0))) ;
+      VPDataInHi := to_integer(signed(RdData(RdData'length-1 downto 32))) ;
+    else
+      VPDataIn   := to_integer(signed(RdData)) ;
+      VPDataInHi := 0;
+    end if;
 
     -- Call VTrans to generate a new access
-    VTrans(NodeNum, Interrupt, VPDataIn, VPDataOut, VPAddr, VPRW) ;
+    VTrans(NodeNum,   Interrupt,
+           VPDataIn,  VPDataInHi,
+           VPDataOut, VPDataOutHi, VPDataWidth,
+           VPAddr,    VPAddrHi,    VPAddrWidth,
+           VPRW) ;
 
     -- Convert address and write data to std_logic_vectors
-    Address       := std_logic_vector(to_signed(VPAddr,    ADDR_WIDTH)) ;
-    WrData        := std_logic_vector(to_signed(VPDataOut, DATA_WIDTH)) ;
+    Address(31 downto  0) := std_logic_vector(to_signed(VPAddr,      32)) ;
+    Address(63 downto 32) := std_logic_vector(to_signed(VPAddrHi,    32)) ;
+    
+    WrData(31 downto 0 )  := std_logic_vector(to_signed(VPDataOut,   32)) ;
+    WrData(63 downto 32)  := std_logic_vector(to_signed(VPDataOutHi, 32)) ;
+    
+    -- Clear saved read data value so upp bits invalidated if
+    -- transaction narrower than last one
+    RdData := std_logic_vector(to_signed(0, RdData'length));
 
     -- Do the operation using the transaction interface
     if to_unsigned(VPRW, 2)(RDbit)
     then
-      Read  (ManagerRec, Address, RdData) ;
+      if VPAddrWidth = 64 then
+        case VPDataWidth is
+        when 64 => Read  (ManagerRec, Address, RdData) ;
+        when 32 => Read  (ManagerRec, Address, RdData(31 downto 0)) ;
+        when 16 => Read  (ManagerRec, Address, RdData(15 downto 0)) ;
+        when  8 => Read  (ManagerRec, Address, RdData( 7 downto 0)) ;
+        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (64 bit arch)");
+        end case;
+      elsif VPAddrWidth = 32 then
+        case VPDataWidth is
+        when 32 => Read  (ManagerRec, Address(31 downto 0), RdData(31 downto 0)) ;
+        when 16 => Read  (ManagerRec, Address(31 downto 0), RdData(15 downto 0)) ;
+        when  8 => Read  (ManagerRec, Address(31 downto 0), RdData(7 downto 0)) ;
+        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (32 bit arch)");
+        end case ;
+      else
+        AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim read transaction");
+      end if;
     else
-      Write (ManagerRec, Address, WrData) ;
+      if VPAddrWidth = 64 then
+        case VPDataWidth is
+        when 64 => Write (ManagerRec, Address, WrData) ;
+        when 32 => Write (ManagerRec, Address, WrData(31 downto 0)) ;
+        when 16 => Write (ManagerRec, Address, WrData(15 downto 0)) ;
+        when  8 => Write (ManagerRec, Address, WrData(7 downto 0)) ;
+        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (64 bit arch)");
+        end case ;
+      elsif VPAddrWidth = 32 then
+        case VPDataWidth is
+        when 32 => Write (ManagerRec, Address(31 downto 0), WrData(31 downto 0)) ;
+        when 16 => Write (ManagerRec, Address(31 downto 0), WrData(15 downto 0)) ;
+        when  8 => Write (ManagerRec, Address(31 downto 0), WrData(7 downto 0)) ;
+        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (32 bit arch)");
+        end case ;
+      else
+        AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim write transaction");
+      end if;
     end if;
 
   end procedure CoSimTrans ;

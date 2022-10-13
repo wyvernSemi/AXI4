@@ -46,7 +46,10 @@
 
 #define VINIT_PARAMS       int  node
 #define VSCHED_PARAMS      int  node, int Interrupt, int VPDataIn, int* VPDataOut, int* VPAddr, int* VPRw,int* VPTicks
-#define VTRANS_PARAMS      int  node, int Interrupt, int VPDataIn, int* VPDataOut, int* VPAddr, int* VPRw
+#define VTRANS_PARAMS      int  node,     int Interrupt,                                                         \
+                           int  VPDataIn, int  VPDataInHi, int* VPDataOut,   int* VPDataOutHi, int* VPDataWidth, \
+                           int* VPAddr,   int* VPAddrHi,   int* VPAddrWidth,                                     \
+                           int* VPRw
 #define VPROCUSER_PARAMS   int  node, int value
 #define VHALT_PARAMS       int, int
 

@@ -88,7 +88,9 @@ static void VUserInit (int node)
 
     // Get function pointer of user entry routine
     sprintf(funcname, "%s%d",    "VUserMain", node);
+#if !defined(WIN32) ||  !defined(WIN64)
     if ((VUserMain_func = (pVUserMain_t) dlsym(RTLD_DEFAULT, funcname)) == NULL)
+#endif
     {
         // If the lookup failed, try loading the shared object immediately
         // and trying again. This addresses an issue seen with ModelSim on
@@ -186,18 +188,18 @@ static void VExch (psend_buf_t psbuf, prcv_buf_t prbuf, uint32_t node)
 /////////////////////////////////////////////////////////////
 // Invokes a write message exchange
 //
-int VWrite (uint64_t Addr, uint32_t Data, int Delta, uint32_t node)
+int VWrite (uint32_t addr, uint32_t data, int delta, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
     
-    sbuf.type  = trans_wr_word;
-    sbuf.addr  = Addr;
-    sbuf.prot  = 0;
-    sbuf.rw    = V_WRITE;
-    sbuf.ticks = Delta ? DELTA_CYCLE : 0;
+    sbuf.type      = trans32_wr_word;
+    sbuf.addr      = addr;
+    sbuf.prot      = 0;
+    sbuf.rw        = V_WRITE;
+    sbuf.ticks     = delta ? DELTA_CYCLE : 0;
     
-    *((uint32_t*)sbuf.data) = Data;
+    *((uint32_t*)sbuf.data) = data;
 
     VExch(&sbuf, &rbuf, node);
 
@@ -207,16 +209,16 @@ int VWrite (uint64_t Addr, uint32_t Data, int Delta, uint32_t node)
 /////////////////////////////////////////////////////////////
 // Invokes a read message exchange
 //
-int VRead (uint64_t Addr, uint32_t *rdata, int Delta, uint32_t node)
+int VRead (uint32_t addr, uint32_t *rdata, int delta, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
 
-    sbuf.type  = trans_rd_word;
-    sbuf.addr  = Addr;
+    sbuf.type  = trans32_rd_word;
+    sbuf.addr  = addr;
     sbuf.prot  = 0;
     sbuf.rw    = V_READ;
-    sbuf.ticks = Delta ? DELTA_CYCLE : 0;
+    sbuf.ticks = delta ? DELTA_CYCLE : 0;
 
     VExch(&sbuf, &rbuf, node);
 
@@ -226,36 +228,116 @@ int VRead (uint64_t Addr, uint32_t *rdata, int Delta, uint32_t node)
 }
 
 /////////////////////////////////////////////////////////////
-// Invokes a 32-bit write transaction exchange
+// Invokes an 8-bit write transaction exchange
 //
-int VTransWrite (uint64_t Addr, uint32_t Data, int prot, uint32_t node)
+uint8_t VTransWrite (uint32_t addr, uint8_t data, int prot, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
     
-    sbuf.type  = trans_wr_word;
-    sbuf.addr  = Addr;
+    sbuf.type  = trans32_wr_byte;
+    sbuf.addr  = addr;
     sbuf.prot  = prot;
     sbuf.rw    = V_WRITE;
     sbuf.ticks = 0;
     
-    *((uint64_t*)sbuf.data) = Data;
+    *((uint8_t*)sbuf.data) = data & 0xffU;
 
     VExch(&sbuf, &rbuf, node);
 
-    return rbuf.data_in ;
+    return rbuf.data_in & 0xffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 8-bit read transaction exchange
+//
+void VTransRead (uint32_t addr, uint8_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+
+    sbuf.type  = trans32_rd_byte;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in & 0xffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 16-bit write transaction exchange
+//
+uint16_t VTransWrite (uint32_t addr, uint16_t data, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans32_wr_hword;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint16_t*)sbuf.data) = data & 0xffffU;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in & 0xffffU;
 }
 
 /////////////////////////////////////////////////////////////
 // Invokes a 32-bit read transaction exchange
 //
-int VTransRead (uint64_t Addr, uint32_t *rdata, int prot, uint32_t node)
+void VTransRead (uint32_t addr, uint16_t *rdata, int prot, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
 
-    sbuf.type  = trans_rd_word;
-    sbuf.addr  = Addr;
+    sbuf.type  = trans32_rd_hword;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in & 0xffffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes an 32-bit write transaction exchange
+//
+uint32_t VTransWrite (uint32_t addr, uint32_t data, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans32_wr_word;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint32_t*)sbuf.data) = data;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 32-bit read transaction exchange
+//
+void VTransRead (uint32_t addr, uint32_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+
+    sbuf.type  = trans32_rd_word;
+    sbuf.addr  = addr;
     sbuf.prot  = prot;
     sbuf.rw    = V_READ;
     sbuf.ticks = 0;
@@ -263,50 +345,165 @@ int VTransRead (uint64_t Addr, uint32_t *rdata, int prot, uint32_t node)
     VExch(&sbuf, &rbuf, node);
 
     *rdata = rbuf.data_in;
+}
 
-    return 0;
+/////////////////////////////////////////////////////////////
+// Invokes an 8-bit write transaction exchange
+//
+uint8_t VTransWrite (uint64_t addr, uint8_t data, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans64_wr_byte;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint8_t*)sbuf.data) = data & 0xffU;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in & 0xffU;
+}
+/////////////////////////////////////////////////////////////
+// Invokes a 8-bit read transaction exchange
+//
+void VTransRead (uint64_t addr, uint8_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+
+    sbuf.type  = trans64_rd_byte;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in & 0xffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 16-bit write transaction exchange
+//
+uint16_t VTransWrite (uint64_t addr, uint16_t data, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans64_wr_hword;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint16_t*)sbuf.data) = data & 0xffffU;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in & 0xffffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 32-bit read transaction exchange
+//
+void VTransRead (uint64_t addr, uint16_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+
+    sbuf.type  = trans64_rd_hword;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in & 0xffffU;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes an 32-bit write transaction exchange
+//
+uint32_t VTransWrite (uint64_t addr, uint32_t data, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+    
+    sbuf.type  = trans64_wr_word;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_WRITE;
+    sbuf.ticks = 0;
+    
+    *((uint32_t*)sbuf.data) = data;
+
+    VExch(&sbuf, &rbuf, node);
+
+    return rbuf.data_in;
+}
+
+/////////////////////////////////////////////////////////////
+// Invokes a 32-bit read transaction exchange
+//
+void VTransRead (uint64_t addr, uint32_t *rdata, int prot, uint32_t node)
+{
+    rcv_buf_t  rbuf;
+    send_buf_t sbuf;
+
+    sbuf.type  = trans64_rd_word;
+    sbuf.addr  = addr;
+    sbuf.prot  = prot;
+    sbuf.rw    = V_READ;
+    sbuf.ticks = 0;
+
+    VExch(&sbuf, &rbuf, node);
+
+    *rdata = rbuf.data_in;
 }
 
 /////////////////////////////////////////////////////////////
 // Invokes a 64-bit write transaction exchange
 //
-int VTransWrite (uint64_t Addr, uint64_t Data, int prot, uint32_t node)
+uint64_t VTransWrite (uint64_t addr, uint64_t data, int prot, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
     
-    sbuf.type  = trans_wr_dword;
-    sbuf.addr  = Addr;
+    sbuf.type  = trans64_wr_dword;
+    sbuf.addr  = addr;
     sbuf.prot  = prot;
     sbuf.rw    = V_WRITE;
     sbuf.ticks = 0;
     
-    *((uint64_t*)sbuf.data) = Data;
+    *((uint64_t*)sbuf.data) = data;
 
     VExch(&sbuf, &rbuf, node);
-
-    return rbuf.data_in ;
+    
+    return (uint64_t)rbuf.data_in | ((uint64_t)rbuf.data_in_hi << 32);
 }
 
 /////////////////////////////////////////////////////////////
 // Invokes a 64-bit read transaction exchange
 //
-int VTransRead (uint64_t Addr, uint64_t *rdata, int prot, uint32_t node)
+void VTransRead (uint64_t addr, uint64_t *rdata, int prot, uint32_t node)
 {
     rcv_buf_t    rbuf;
     send_buf_t   sbuf;
 
-    sbuf.type  = trans_rd_dword;
-    sbuf.addr  = Addr;
+    sbuf.type  = trans64_rd_dword;
+    sbuf.addr  = addr;
     sbuf.prot  = prot;
     sbuf.rw    = V_READ;
     sbuf.ticks =  0;
 
     VExch(&sbuf, &rbuf, node);
 
-    *rdata     = rbuf.data_in;
-
-    return 0;
+    *rdata = (uint64_t)rbuf.data_in | ((uint64_t)rbuf.data_in_hi << 32);
 }
 
 /////////////////////////////////////////////////////////////
@@ -314,7 +511,7 @@ int VTransRead (uint64_t Addr, uint64_t *rdata, int prot, uint32_t node)
 //
 int VTick (uint32_t ticks, uint32_t node)
 {
-    rcv_buf_t rbuf;
+    rcv_buf_t  rbuf;
     send_buf_t sbuf;
 
     sbuf.rw       = V_IDLE;

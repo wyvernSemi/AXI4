@@ -46,6 +46,11 @@
 // I am node 0 context
 static int node  = 0;
 
+#ifdef _WIN32
+#define srandom srand
+#define random rand
+#endif
+
 // ------------------------------------------------------------------------------
 // Main entry point for node 0 virtual processor software
 //
@@ -68,7 +73,7 @@ extern "C" void VUserMain0()
         
         // Get read/write and address from random value
         uint32_t rnw  = (uint32_t)(randval & 0x1UL);        // Bit 0
-        uint64_t addr = (uint32_t)(randval & 0xfffffffcUL); // Bits 31:2
+        uint32_t addr = (uint32_t)(randval & 0xfffffffcUL); // Bits 31:2
 
         // Do a read
         if (rnw)

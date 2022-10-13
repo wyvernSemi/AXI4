@@ -133,8 +133,8 @@ VPROC_RTN_TYPE VSched (VSCHED_PARAMS)
 
         switch(ns[node]->send_buf.type)
         {
-            case trans_wr_word:
-            case trans_rd_word:
+            case trans32_wr_word:
+            case trans32_rd_word:
               VPDataOut_int = ((uint32_t*)ns[node]->send_buf.data)[0];
               VPAddr_int    = (uint32_t)((ns[node]->send_buf.addr) & 0xffffffffULL);
               VPRw_int      = ns[node]->send_buf.rw;
@@ -166,11 +166,13 @@ VPROC_RTN_TYPE VSched (VSCHED_PARAMS)
 VPROC_RTN_TYPE VTrans (VTRANS_PARAMS)
 {
 
-    int VPDataOut_int, VPAddr_int, VPRw_int, VPTicks_int;
+    int VPDataOut_int,   VPAddr_int,   VPRw_int, VPTicks_int;
+    int VPDataOutHi_int, VPAddrHi_int;
 
     // Sample inputs and update node state
-    ns[node]->rcv_buf.data_in   = VPDataIn;
-    ns[node]->rcv_buf.interrupt = Interrupt;
+    ns[node]->rcv_buf.data_in    = VPDataIn;
+    ns[node]->rcv_buf.data_in_hi = VPDataInHi;
+    ns[node]->rcv_buf.interrupt  = Interrupt;
 
     // Send message to VUser with VPDataIn value
     debug_io_printf("VTrans(): setting rcv[%d] semaphore\n", node);
@@ -183,17 +185,54 @@ VPROC_RTN_TYPE VTrans (VTRANS_PARAMS)
     // Update outputs of VTrans procedure
     if (ns[node]->send_buf.ticks >= DELTA_CYCLE)
     {
+        VPDataOut_int   = ((uint32_t*)ns[node]->send_buf.data)[0];
+        VPDataOutHi_int = ((uint32_t*)ns[node]->send_buf.data)[4];
+        VPAddr_int      = (uint32_t)((ns[node]->send_buf.addr)       & 0xffffffffULL);
+        VPAddrHi_int    = (uint32_t)((ns[node]->send_buf.addr >> 32) & 0xffffffffULL);
+        VPRw_int        = ns[node]->send_buf.rw;
 
         switch(ns[node]->send_buf.type)
         {
-            case trans_wr_word:
-            case trans_rd_word:
-              VPDataOut_int = ((uint32_t*)ns[node]->send_buf.data)[0];
-              VPAddr_int    = (uint32_t)((ns[node]->send_buf.addr) & 0xffffffffULL);
-              VPRw_int      = ns[node]->send_buf.rw;
+
+            case trans32_wr_byte:
+            case trans32_rd_byte:
+              *VPAddrWidth = 32;
+              *VPDataWidth = 8;
+              break;
+            case trans32_wr_hword:
+            case trans32_rd_hword:
+              *VPAddrWidth = 32;
+              *VPDataWidth = 16;
+              break;
+            case trans32_wr_word:
+            case trans32_rd_word:
+              *VPAddrWidth = 32;
+              *VPDataWidth = 32;
               break;
 
+            case trans64_wr_byte:
+            case trans64_rd_byte:
+              *VPAddrWidth = 64;
+              *VPDataWidth = 8;
+              break;
+            case trans64_wr_hword:
+            case trans64_rd_hword:
+              *VPAddrWidth = 64;
+              *VPDataWidth = 16;
+              break;
+            case trans64_wr_word:
+            case trans64_rd_word:
+              *VPAddrWidth = 64;
+              *VPDataWidth = 32;
+              break;
+            case trans64_wr_dword:
+            case trans64_rd_dword:
+              *VPAddrWidth = 64;
+              *VPDataWidth = 64;
+              break;
+              
             default:
+              // Unsupported
               break;
         }
 
@@ -204,8 +243,10 @@ VPROC_RTN_TYPE VTrans (VTRANS_PARAMS)
 
     // Export outputs over FLI
     *VPDataOut        = VPDataOut_int;
+    *VPDataOutHi      = VPDataOutHi_int;
     *VPAddr           = VPAddr_int;
-    *VPRw             = VPRw_int;;
+    *VPAddrHi         = VPAddrHi_int;
+    *VPRw             = VPRw_int;
 
 }
 

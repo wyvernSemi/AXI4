@@ -32,12 +32,20 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#ifndef __USE_GNU
-#define __USE_GNU
-#include <dlfcn.h>
-#undef __USE_GNU
+#if defined(WIN32) &&  defined(WIN64)
+#include <windows.h>
+#define dlopen(x, y)  LoadLibrary(x)
+#define dlsym(x,y) GetProcAddress((HMODULE)x, y)
 #else
-#include <dlfcn.h>
+
+# ifndef __USE_GNU
+# define __USE_GNU
+# include <dlfcn.h>
+# undef __USE_GNU
+# else
+# include <dlfcn.h>
+# endif
+
 #endif
 
 #include <pthread.h>
@@ -78,16 +86,27 @@
 
 typedef enum trans_type_e
 {
-  trans_wr_byte           = 0,
-  trans_wr_hword          = 1,
-  trans_wr_word           = 2,
-  trans_wr_dword          = 3,
-  trans_wr_qword          = 4,
-  trans_rd_byte           = 8,
-  trans_rd_hword          = 9,
-  trans_rd_word           = 10,
-  trans_rd_dword          = 11,
-  trans_rd_qword          = 12
+  trans32_wr_byte  = 0,
+  trans32_wr_hword,
+  trans32_wr_word,
+  trans32_wr_dword,
+  trans32_wr_qword,
+  trans32_rd_byte ,
+  trans32_rd_hword,
+  trans32_rd_word ,
+  trans32_rd_dword,
+  trans32_rd_qword,
+  trans64_wr_byte,
+  trans64_wr_hword,
+  trans64_wr_word,
+  trans64_wr_dword,
+  trans64_wr_qword,
+  trans64_rd_byte,
+  trans64_rd_hword,
+  trans64_rd_word,
+  trans64_rd_dword,
+  trans64_rd_qword 
+
 } trans_type_e;
 
 typedef enum arch_e
@@ -101,7 +120,7 @@ typedef struct
 {
     trans_type_e        type;
     uint32_t            prot;
-    uint32_t            addr;
+    uint64_t            addr;
     uint8_t             data[16];
     uint32_t            rw;
     int                 ticks;
@@ -110,6 +129,7 @@ typedef struct
 typedef struct
 {
     unsigned int        data_in;
+    unsigned int        data_in_hi;
     void*               data;
     unsigned int        interrupt;
 } rcv_buf_t, *prcv_buf_t;

@@ -41,12 +41,17 @@ package vproc_pkg is
   attribute foreign of VSched : procedure is "VSched VProc.so" ;
 
   procedure VTrans (
-    node      : in  integer ;
-    Interrupt : in  integer ;
-    VPDataIn  : in  integer ;
-    VPDataOut : out integer ;
-    VPAddr    : out integer ;
-    VPRw      : out integer
+    node        : in  integer ;
+    Interrupt   : in  integer ;
+    VPDataIn    : in  integer ;
+    VPDataInHi  : in  integer ;
+    VPDataOut   : out integer ;
+    VPDataOutHi : out integer ;
+    VPDataWidth : out integer ;
+    VPAddr      : out integer ;
+    VPAddrHi    : out integer ;
+    VPAddrWidth : out integer ;
+    VPRw        : out integer
   ) ;
   attribute foreign of VTrans : procedure is "VTrans VProc.so" ;
 
@@ -81,12 +86,17 @@ package body vproc_pkg is
   end ;
 
   procedure VTrans (
-    node      : in  integer ;
-    Interrupt : in  integer ;
-    VPDataIn  : in  integer ;
-    VPDataOut : out integer ;
-    VPAddr    : out integer ;
-    VPRw      : out integer
+    node        : in  integer ;
+    Interrupt   : in  integer ;
+    VPDataIn    : in  integer ;
+    VPDataInHi  : in  integer ;
+    VPDataOut   : out integer ;
+    VPDataOutHi : out integer ;
+    VPDataWidth : out integer ;
+    VPAddr      : out integer ;
+    VPAddrHi    : out integer ;
+    VPAddrWidth : out integer ;
+    VPRw        : out integer
   ) is
   begin
     report "ERROR: foreign subprogram out_params not called" ;
