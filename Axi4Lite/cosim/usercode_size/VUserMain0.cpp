@@ -39,6 +39,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#include <cmath>
+#include <algorithm>
+#include <vector>
 
 // Import VProc user API
 #include "VUser.h"
@@ -50,6 +53,12 @@ static int node  = 0;
 #define srandom srand
 #define random rand
 #endif
+
+typedef struct {
+    uint32_t addr;
+    uint32_t wdata;
+    uint32_t size;
+} wtrans_t;
 
 // ------------------------------------------------------------------------------
 // Main entry point for node 0 virtual processor software
@@ -63,40 +72,83 @@ extern "C" void VUserMain0()
 {
     VPrint("VUserMain0(): node=%d\n", node);
 
-    // Use node number plus 1 as the ransom number generator seed.
-    srandom(node + 1);
+    std::vector<wtrans_t> vec;
+
+    // Use node number, inverted, as the random number generator seed.
+    srandom(~node);
 
     while (true)
     {
-        // Generate a random number
-        long int randval = random() ^ (random() << 16);
-        
         // Get read/write and address from random value
-        uint32_t rnw  = (uint32_t)(randval & 0x1UL);        // Bit 0
-        uint32_t addr = (uint32_t)(randval & 0xfffffffcUL); // Bits 31:2
+        uint32_t rnw = (uint32_t)(random() & 0x1UL);        // Bit 0
+
+        // If no writes outstanding, force to be a write
+        if (vec.empty())
+        {
+            rnw = 0;
+        }
 
         // Do a read
         if (rnw)
         {
             uint32_t rdata;
-            
+            uint16_t rdata16;
+            uint8_t  rdata8;
+
+            char *msg = "?????" ;
+
+            wtrans_t wtrans = vec.front();
+
+            vec.erase(vec.begin());
+
             // Do a 32-bit read and place returned data in rdata
-            VTransRead(addr, &rdata);
-            
-            // Display read transaction information
-            VPrint("VUserMain0: read %08X from address %08X\n", rdata, addr);
+            switch(wtrans.size)
+            {
+                case  8: VTransRead(wtrans.addr, &rdata8);  rdata = rdata8;  msg = "byte";  break;
+                case 16: VTransRead(wtrans.addr, &rdata16); rdata = rdata16; msg = "hword"; break;
+                case 32: VTransRead(wtrans.addr, &rdata);                    msg = "word";  break;
+            }
+
+            if (rdata == wtrans.wdata)
+            {
+                // Display read transaction information
+                VPrint("VUserMain0: read %s %08X from address %08X\n", msg, rdata, wtrans.addr);
+            }
+            else
+            {
+                VPrint("VUserMain0: ***ERROR*** read %s %08X from address %08X. Expected %08x\n", msg, rdata, wtrans.addr, wtrans.wdata);
+            }
         }
         // Do a write
         else
         {
+            wtrans_t wtrans;
+
+            char *msg = "?????" ;
+
+            uint32_t log_size  = pow(2, (random() & 0x3)%3);
+            uint32_t addr_mask = ~(log_size - 1UL);
+
+            // Generate some random address
+            wtrans.addr = (random() ^ (random() << 16)) & addr_mask;
+
+            wtrans.size  = 8 * log_size;
+
             // Generate some random data
-            uint32_t wdata = (random() ^ (random() << 16)) & 0xffffffffUL;
-            
+            wtrans.wdata = (random() ^ (random() << 16)) & ((1ULL << wtrans.size) - 1ULL);
+
+            vec.push_back(wtrans);
+
             // Do a 32-bit write transaction
-            VTransWrite(addr, wdata);
-            
+            switch(wtrans.size)
+            {
+                case  8: VTransWrite(wtrans.addr,  (uint8_t)wtrans.wdata); msg = "byte";  break;
+                case 16: VTransWrite(wtrans.addr, (uint16_t)wtrans.wdata); msg = "hword"; break;
+                case 32: VTransWrite(wtrans.addr, (uint32_t)wtrans.wdata); msg = "word";  break;
+            }
+
             // Display write trabsaction display information
-            VPrint("VUserMain0: wrote %08X to address %08X\n", wdata, addr);
+            VPrint("VUserMain0: wrote %s %08X to address %08X\n", msg, wtrans.wdata, wtrans.addr);
         }
     }
 

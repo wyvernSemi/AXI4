@@ -125,6 +125,8 @@ procedure CoSimAccess (
   
   variable VPDataWidth     : integer ;
   variable VPAddrWidth     : integer ;
+  
+  variable Interrupt       : integer := 0 ; -- currently unconnected
 
   variable OperationSlv    : OperationSlvType;
 
@@ -132,17 +134,11 @@ procedure CoSimAccess (
 
     RdDataSamp  := to_integer(signed(RdData));
 
-    -- Call VSched
-    VTrans(NodeNum,
-           0, -- interrupts
-           RdDataSamp,
-           RdDataSampHi,
-           VPDataOut,
-           VPDataOutHi,
-           VPDataWidth,
-           VPAddr,
-           VPAddrHi,
-           VPAddrWidth,
+    -- Call VTrans to generate a new access
+    VTrans(NodeNum,    Interrupt,
+           RdDataSamp, RdDataSampHi,
+           VPDataOut,  VPDataOutHi, VPDataWidth,
+           VPAddr,     VPAddrHi,    VPAddrWidth,
            VPRW) ;
 
     Address       := std_logic_vector(to_signed(VPAddr,    ADDR_WIDTH)) ;

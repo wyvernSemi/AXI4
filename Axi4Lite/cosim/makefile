@@ -29,7 +29,7 @@ SRCDIR          = code
 USRCDIR         = usercode
 TESTDIR         = .
 VOBJDIR         = ${TESTDIR}/obj
-SIMDIR          = ${TESTDIR}/../sim
+OPDIR           = ${TESTDIR}/../sim
 MEMMODELDIR     = .
 
 # VPROC C source code
@@ -40,7 +40,7 @@ VPROC_C         = VSched.c \
 MEM_C           = 
 
 # Test user code
-USER_C          = VUserMain0.c
+USER_C          = VUserMain0.cpp
 
 USER_CPP_BASE   = $(notdir $(filter %cpp, ${USER_C}))
 USER_C_BASE     = $(notdir $(filter %c, ${USER_C}))
@@ -57,7 +57,7 @@ VOBJS           = ${addprefix ${VOBJDIR}/, ${USER_C_BASE:%.c=%.o} ${USER_CPP_BAS
 USRFLAGS        = 
 
 # Generated  PLI C library
-VPROC_PLI       = ${SIMDIR}/VProc.so
+VPROC_PLI       = ${OPDIR}/VProc.so
 VLIB            = ${TESTDIR}/libvproc.a
 
 # Get OS type
@@ -122,10 +122,10 @@ ${VOBJS}: | ${VOBJDIR}
 ${VOBJDIR}:
 	@mkdir ${VOBJDIR}
     
-${SIMDIR}:
-	@mkdir ${SIMDIR}
+${OPDIR}:
+	@mkdir ${OPDIR}
 
-${VPROC_PLI}: ${SIMDIR} ${VLIB} ${VOBJDIR}/veriuser.o
+${VPROC_PLI}: ${OPDIR} ${VLIB} ${VOBJDIR}/veriuser.o
 	@${C++} ${CPPSTD}                                   \
             ${CFLAGS_SO}                                \
             -Wl,-whole-archive                          \

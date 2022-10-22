@@ -46,9 +46,13 @@ analyze    OsvvmTestCoSimPkg.vhd
            
 analyze    TestCtrl_e.vhd
 analyze    TbAxi4.vhd
+analyze    TbAxi4Cosim.vhd
 
 analyze    TbAxi4_CoSim.vhd
-simulate   TbAxi4_CoSim -pli VProc.so
+simulate   TbAxi4_CoSim [ mk_vproc ../cosim usercode . ]
+
+analyze    TbAxi4_CoSimSizes.vhd
+simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim usercode_size . ]
 
 #RunTest TbAxi4_RandomReadWrite.vhd
 
