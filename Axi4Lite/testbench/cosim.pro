@@ -1,14 +1,13 @@
-#  File Name:               testbench.pro
+#  File Name:               cosim.pro
 #  Revision:                OSVVM MODELS STANDARD VERSION
 #                           
-#  Maintainer:              Jim Lewis      email:  jim@synthworks.com
+#  Maintainer:              Simon Southwell      simon.southwell@gmail.com
 #  Contributor(s):
-#     Jim Lewis             jim@synthworks.com
-#     Simon Soutrhwell      simon.southwell@gmail.com
+#     Simon Southwell       simon.southwell@gmail.com
 #
 #
 #  Description:
-#        Script to run one Axi4 Lite CoSim test  
+#        Script to run Axi4 Lite CoSim tests
 #
 #  Developed for:
 #        SynthWorks Design Inc.
@@ -53,6 +52,4 @@ simulate   TbAxi4_CoSim [ mk_vproc ../cosim usercode . ]
 
 analyze    TbAxi4_CoSimSizes.vhd
 simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim usercode_size . ]
-
-#RunTest TbAxi4_RandomReadWrite.vhd
 
