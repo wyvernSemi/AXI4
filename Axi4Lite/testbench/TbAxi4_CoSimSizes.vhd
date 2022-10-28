@@ -42,7 +42,7 @@
 
 library osvvm_TbAxi4Lite ;
 
-use osvvm_TbAxi4Lite.vproc_pkg.all;
+use osvvm_TbAxi4Lite.OsvvmVprocPkg.all;
 use osvvm_TbAxi4Lite.OsvvmTestCoSimPkg.all;
 
 library osvvm_axi4 ;

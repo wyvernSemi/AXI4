@@ -39,7 +39,7 @@
 
 library    osvvm_TbAxi4Lite
 
-analyze    ../cosim/vproc_pkg.vhd
+analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
 analyze    OsvvmTestCommonPkg.vhd
 analyze    OsvvmTestCoSimPkg.vhd
            
@@ -50,7 +50,7 @@ analyze    TbAxi4Cosim.vhd
 analyze    TbAxi4_CoSim.vhd
 analyze    TbAxi4_CoSimSizes.vhd
 
-#simulate   TbAxi4_CoSim [ mk_vproc ../cosim usercode . ]
-#simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim usercode_size . ]
-simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim socket . ]
+#simulate   TbAxi4_CoSim      [ mk_vproc ../../../CoSim usercode . ]
+#simulate   TbAxi4_CoSimSizes [ mk_vproc ../../../CoSim usercode_size . ]
+simulate   TbAxi4_CoSimSizes [ mk_vproc ../../../CoSim [pwd]/../cosim/socket [pwd]/. ]
 

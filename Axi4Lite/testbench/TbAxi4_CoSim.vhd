@@ -40,7 +40,7 @@
 --  limitations under the License.
 --
 
-use work.vproc_pkg.all;
+use work.OsvvmVprocPkg.all;
 use work.OsvvmTestCoSimPkg.all;
 
 architecture CoSim of TestCtrl is

@@ -3,7 +3,7 @@
 --  Design Unit Name:  OssvmTestCoSimPkg
 --  Revision:          OSVVM MODELS STANDARD VERSION
 --
---  Maintainer:        Jim Lewis      email:  jim@synthworks.com
+--  Maintainer:        Simon Southwell  email: simon.southwell@gmail.com
 --  Contributor(s):
 --     Jim Lewis            jim@synthworks.com
 --     Simon Southwell      simon.southwell@gmail.com
@@ -51,7 +51,7 @@ library OSVVM ;
 library osvvm_Axi4 ;
   context osvvm_Axi4.Axi4LiteContext ;
 
-use work.vproc_pkg.all;
+use work.OsvvmVprocPkg.all;
 
 package OsvvmTestCoSimPkg is
 

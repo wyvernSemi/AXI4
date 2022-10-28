@@ -15,8 +15,8 @@
 #include <cstdlib>
 #include <cstdint>
 
-#include "VUser.h"
-#include "osvvm_cosim_skt.h"
+#include "OsvvmVUser.h"
+#include "OsvvmCosimSkt.h"
 
 static int node = 0;
 
