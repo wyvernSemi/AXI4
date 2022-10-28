@@ -86,7 +86,6 @@ extern EXTC int  VUser         (int node);
 extern EXTC int  VTick         (uint32_t ticks, uint32_t node);
 extern EXTC void VRegInterrupt (int level, pVUserInt_t func, uint32_t node);
 extern EXTC void VRegUser      (pVUserCB_t func, uint32_t node);
-extern EXTC void VRegUser      (pVUserCB_t func, uint32_t node);
 
 // In windows using the FLI, a \n in the printf format string causes
 // two lines to be advanced, so replace new lines with carriage returns
@@ -102,7 +101,10 @@ extern EXTC void VRegUser      (pVUserCB_t func, uint32_t node);
                               printf (formbuf, ##__VA_ARGS__);                     \
                               }
 # else
-# define VPrint(...) io_printf (__VA_ARGS__)
+// If compiled under C++, io_printf() uses PLI_BYTE* which can't have const char* cast,
+// so use buffers for a format string and single string buffer argument, and sprintf to
+// format the string into the msg buffer
+# define VPrint(...) {char msg[4096], fmt[10]; strcpy(fmt, "%s");sprintf(msg, __VA_ARGS__); io_printf(fmt, msg);}
 # endif
 
 #ifdef DEBUG

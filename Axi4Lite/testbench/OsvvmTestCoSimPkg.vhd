@@ -224,44 +224,46 @@ procedure CoSimTrans (
     RdData := std_logic_vector(to_signed(0, RdData'length));
 
     -- Do the operation using the transaction interface
-    if to_unsigned(VPRW, 2)(RDbit)
-    then
-      if VPAddrWidth = 64 then
-        case VPDataWidth is
-        when 64 => Read  (ManagerRec, Address, RdData) ;
-        when 32 => Read  (ManagerRec, Address, RdData(31 downto 0)) ;
-        when 16 => Read  (ManagerRec, Address, RdData(15 downto 0)) ;
-        when  8 => Read  (ManagerRec, Address, RdData( 7 downto 0)) ;
-        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (64 bit arch)");
-        end case;
-      elsif VPAddrWidth = 32 then
-        case VPDataWidth is
-        when 32 => Read  (ManagerRec, Address(31 downto 0), RdData(31 downto 0)) ;
-        when 16 => Read  (ManagerRec, Address(31 downto 0), RdData(15 downto 0)) ;
-        when  8 => Read  (ManagerRec, Address(31 downto 0), RdData(7 downto 0)) ;
-        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (32 bit arch)");
-        end case ;
+    if VPRW /= 0 then
+      if to_unsigned(VPRW, 2)(RDbit)
+      then
+        if VPAddrWidth = 64 then
+          case VPDataWidth is
+          when 64 => Read  (ManagerRec, Address, RdData) ;
+          when 32 => Read  (ManagerRec, Address, RdData(31 downto 0)) ;
+          when 16 => Read  (ManagerRec, Address, RdData(15 downto 0)) ;
+          when  8 => Read  (ManagerRec, Address, RdData( 7 downto 0)) ;
+          when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (64 bit arch)");
+          end case;
+        elsif VPAddrWidth = 32 then
+          case VPDataWidth is
+          when 32 => Read  (ManagerRec, Address(31 downto 0), RdData(31 downto 0)) ;
+          when 16 => Read  (ManagerRec, Address(31 downto 0), RdData(15 downto 0)) ;
+          when  8 => Read  (ManagerRec, Address(31 downto 0), RdData(7 downto 0)) ;
+          when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim read transaction (32 bit arch)");
+          end case ;
+        else
+          AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim read transaction");
+        end if;
       else
-        AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim read transaction");
-      end if;
-    else
-      if VPAddrWidth = 64 then
-        case VPDataWidth is
-        when 64 => Write (ManagerRec, Address, WrData) ;
-        when 32 => Write (ManagerRec, Address, WrData(31 downto 0)) ;
-        when 16 => Write (ManagerRec, Address, WrData(15 downto 0)) ;
-        when  8 => Write (ManagerRec, Address, WrData(7 downto 0)) ;
-        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (64 bit arch)");
-        end case ;
-      elsif VPAddrWidth = 32 then
-        case VPDataWidth is
-        when 32 => Write (ManagerRec, Address(31 downto 0), WrData(31 downto 0)) ;
-        when 16 => Write (ManagerRec, Address(31 downto 0), WrData(15 downto 0)) ;
-        when  8 => Write (ManagerRec, Address(31 downto 0), WrData(7 downto 0)) ;
-        when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (32 bit arch)");
-        end case ;
-      else
-        AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim write transaction");
+        if VPAddrWidth = 64 then
+          case VPDataWidth is
+          when 64 => Write (ManagerRec, Address, WrData) ;
+          when 32 => Write (ManagerRec, Address, WrData(31 downto 0)) ;
+          when 16 => Write (ManagerRec, Address, WrData(15 downto 0)) ;
+          when  8 => Write (ManagerRec, Address, WrData(7 downto 0)) ;
+          when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (64 bit arch)");
+          end case ;
+        elsif VPAddrWidth = 32 then
+          case VPDataWidth is
+          when 32 => Write (ManagerRec, Address(31 downto 0), WrData(31 downto 0)) ;
+          when 16 => Write (ManagerRec, Address(31 downto 0), WrData(15 downto 0)) ;
+          when  8 => Write (ManagerRec, Address(31 downto 0), WrData(7 downto 0)) ;
+          when others => AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid data width for co-sim write transaction (32 bit arch)");
+          end case ;
+        else
+          AlertIf(ALERTLOG_DEFAULT_ID, true, "Invalid address width for co-sim write transaction");
+        end if;
       end if;
     end if;
 

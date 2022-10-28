@@ -23,42 +23,40 @@
 # $MODEL_TECH environment variable must be set
 
 # Define the maximum number of supported VProcs in the compile pli library
-MAX_NUM_VPROC   = 64
+MAX_NUM_VPROC      = 64
 
-SRCDIR          = code
-USRCDIR         = usercode
-TESTDIR         = .
-VOBJDIR         = ${TESTDIR}/obj
-OPDIR           = ${TESTDIR}/../sim
-MEMMODELDIR     = .
+SRCDIR             = code
+USRCDIR            = usercode
+TESTDIR            = .
+VOBJDIR            = ${TESTDIR}/obj
+OPDIR              = ${TESTDIR}/../sim
+MEMMODELDIR        = .
 
 # VPROC C source code
-VPROC_C         = VSched.c \
-                  VUser.c
-                  
+VPROC_C            = $(wildcard ${SRCDIR}/*.c*)
+VPROC_C_BASE       = $(notdir $(filter %c, ${VPROC_C}))
+VPROC_CPP_BASE     = $(notdir $(filter %cpp, ${VPROC_C}))
+
 # Memory model C code
-MEM_C           = 
+MEM_C              =
 
 # Test user code
-USER_C          = VUserMain0.cpp
+USER_C             = $(wildcard ${USRCDIR}/*.c*)
 
-USER_CPP_BASE   = $(notdir $(filter %cpp, ${USER_C}))
-USER_C_BASE     = $(notdir $(filter %c, ${USER_C}))
-MEM_CPP_BASE    = $(notdir $(filter %cpp, ${MEM_C}))
-MEM_C_BASE      = $(notdir $(filter %c, ${MEM_C}))
+USER_CPP_BASE      = $(notdir $(filter %cpp, ${USER_C}))
+USER_C_BASE        = $(notdir $(filter %c, ${USER_C}))
 
-SRC_INCL        = $(wildcard ${SRCDIR}/*.h)
-USER_INCL       = $(wildcard ${USRCDIR}/*.h)
+SRC_INCL           = $(wildcard ${SRCDIR}/*.h)
+USER_INCL          = $(wildcard ${USRCDIR}/*.h)
 
-VOBJS           = ${addprefix ${VOBJDIR}/, ${USER_C_BASE:%.c=%.o} ${USER_CPP_BASE:%.cpp=%.o} \
-                  ${VPROC_C:%.c=%.o} ${MEM_C_BASE:%.c=%.o} ${MEM_CPP_BASE:%.cpp=%.o}}
-                  
+VOBJS              = $(addprefix ${VOBJDIR}/, ${USER_C_BASE:%.c=%.o} ${USER_CPP_BASE:%.cpp=%.o} \
+                     ${VPROC_C_BASE:%.c=%.o} ${VPROC_CPP_BASE:%.cpp=%.o})
 
-USRFLAGS        = 
+USRFLAGS           =
 
 # Generated  PLI C library
-VPROC_PLI       = ${OPDIR}/VProc.so
-VLIB            = ${TESTDIR}/libvproc.a
+VPROC_PLI          = ${OPDIR}/VProc.so
+VLIB               = ${TESTDIR}/libvproc.a
 
 # Get OS type
 OSTYPE:=$(shell uname)
@@ -68,24 +66,26 @@ ifeq (${OSTYPE}, Linux)
   CFLAGS_SO        = -shared -lpthread -lrt -rdynamic
   CPPSTD           = -std=c++11
   MODELSIMBINDIR   = linuxaloem
+  WLIB             =
 else
   CFLAGS_SO        = -shared -Wl,-export-all-symbols
   CPPSTD           =
   MODELSIMBINDIR   = win32aloem
+  WLIB             = -lWs2_32
 endif
 
-CC              = gcc
-C++             = g++
-CFLAGS          = -fPIC                                 \
-                  -m32                                  \
-                  -g                                    \
-                  ${USRFLAGS}                           \
-                  -I${SRCDIR}                           \
-                  -I${USRCDIR}                          \
-                  -I${MODEL_TECH}/../include            \
-                  -DVP_MAX_NODES=${MAX_NUM_VPROC}       \
-                  -DMODELSIM                            \
-                  -D_REENTRANT
+CC                 = gcc
+C++                = g++
+CFLAGS             = -fPIC                                 \
+                     -m32                                  \
+                     -g                                    \
+                     ${USRFLAGS}                           \
+                     -I${SRCDIR}                           \
+                     -I${USRCDIR}                          \
+                     -I${MODEL_TECH}/../include            \
+                     -DVP_MAX_NODES=${MAX_NUM_VPROC}       \
+                     -DMODELSIM                            \
+                     -D_REENTRANT
 
 # Comman flags for vsim
 VSIMFLAGS = -pli ${VPROC_PLI} ${VPROC_TOP}
@@ -94,7 +94,7 @@ VSIMFLAGS = -pli ${VPROC_PLI} ${VPROC_TOP}
 # BUILD RULES
 #------------------------------------------------------
 
-all: ${VPROC_PLI} 
+all: ${VPROC_PLI}
 
 ${VOBJDIR}/%.o: ${SRCDIR}/%.c ${SRC_INCL}
 	@${CC} -c ${CFLAGS} $< -o $@
@@ -107,12 +107,6 @@ ${VOBJDIR}/%.o: ${USRCDIR}/%.c ${USER_INCL}
 
 ${VOBJDIR}/%.o: ${USRCDIR}/%.cpp ${USER_INCL}
 	@${C++} ${CPPSTD} -Wno-write-strings -c ${CFLAGS} $< -o $@
-    
-#${VOBJDIR}/%.o: ${MEMMODELDIR}/%.c ${MEMMODELDIR}/*.h
-#	@${CC} -c ${CFLAGS} $< -o $@
-    
-#${VOBJDIR}/%.o: ${MEMMODELDIR}/%.cpp ${MEMMODELDIR}/*.h
-#	@${C++} -c ${CFLAGS} $< -o $@
 
 ${VLIB} : ${VOBJS} ${VOBJDIR}
 	@ar cr ${VLIB} ${VOBJS}
@@ -121,21 +115,21 @@ ${VOBJS}: | ${VOBJDIR}
 
 ${VOBJDIR}:
 	@mkdir ${VOBJDIR}
-    
+
 ${OPDIR}:
 	@mkdir ${OPDIR}
 
-${VPROC_PLI}: ${OPDIR} ${VLIB} ${VOBJDIR}/veriuser.o
+${VPROC_PLI}: ${OPDIR} ${VLIB}
 	@${C++} ${CPPSTD}                                   \
             ${CFLAGS_SO}                                \
             -Wl,-whole-archive                          \
             ${CFLAGS}                                   \
-            ${VOBJDIR}/veriuser.o                       \
             -lpthread                                   \
             -L${MODEL_TECH}                             \
             -lmtipli                                    \
             -L${TESTDIR} -lvproc                        \
             -Wl,-no-whole-archive                       \
+            ${WLIB}                                     \
             -o $@
 
 #------------------------------------------------------

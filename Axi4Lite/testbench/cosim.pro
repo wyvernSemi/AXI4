@@ -48,8 +48,9 @@ analyze    TbAxi4.vhd
 analyze    TbAxi4Cosim.vhd
 
 analyze    TbAxi4_CoSim.vhd
-simulate   TbAxi4_CoSim [ mk_vproc ../cosim usercode . ]
-
 analyze    TbAxi4_CoSimSizes.vhd
-simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim usercode_size . ]
+
+#simulate   TbAxi4_CoSim [ mk_vproc ../cosim usercode . ]
+#simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim usercode_size . ]
+simulate   TbAxi4_CoSimSizes [ mk_vproc ../cosim socket . ]
 

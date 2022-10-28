@@ -42,8 +42,8 @@
 # mk_vproc_clean
 #   Do a make clean on the VProc test directory
 #
-proc mk_vproc_clean {srcrootdir testname} {
-  exec make -C $srcrootdir USRCDIR=$testname clean
+proc mk_vproc_clean {srcrootdir testname opdir} {
+  exec make -C $srcrootdir USRCDIR=$testname OPDIR=$opdir clean
 }
 
 # -------------------------------------------------
@@ -53,9 +53,9 @@ proc mk_vproc_clean {srcrootdir testname} {
 #
 proc mk_vproc {srcrootdir testname opdir} {
 
-  mk_vproc_clean $srcrootdir $testname
+  mk_vproc_clean $srcrootdir $testname $opdir
   exec make -C $srcrootdir USRCDIR=$testname OPDIR=$opdir
-  file copy -force $srcrootdir/$testname/VProc.so $opdir
+  file copy -force $srcrootdir/VProc.so $opdir
 }
 
 
@@ -67,5 +67,5 @@ proc mk_vproc {srcrootdir testname opdir} {
 proc mk_vproc_noclean {srcrootdir testname opdir} {
 
   exec make -C $srcrootdir USRCDIR=$testname OPDIR=$opdir
-  file copy -force $srcrootdir/$testname/VProc.so $opdir
+  file copy -force $srcrootdir/VProc.so $opdir
 }
