@@ -30,6 +30,18 @@ s.sendall("$m 80001c30,1#".encode())
 data = getmsg()
 print("Received " + data)
 
+s.sendall("$m 80001c31,1#".encode())
+data = getmsg()
+print("Received " + data)
+
+s.sendall("$m 80001c32,1#".encode())
+data = getmsg()
+print("Received " + data)
+
+s.sendall("$m 80001c33,1#".encode())
+data = getmsg()
+print("Received " + data)
+
 s.sendall("$D#".encode())
 data = getmsg()
 print("Received " + data)

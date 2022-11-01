@@ -37,6 +37,8 @@
 #  limitations under the License.
 #
 
+source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
+
 library    osvvm_TbAxi4Lite
 
 analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
