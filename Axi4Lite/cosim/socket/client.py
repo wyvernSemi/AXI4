@@ -1,47 +1,68 @@
 import socket
 
-def getmsg() :
+def getmsg(skt) :
 
   msgstr = ''
   while True :
-     msg = s.recv(1)
+     msg = skt.recv(1)
      msgstr += msg.decode()
      if msg.decode() == '#' :
        break
 
-  msg = s.recv(1)
+  msg = skt.recv(1)
   msgstr += msg.decode()
-  msg = s.recv(1)
+  msg = skt.recv(1)
   msgstr += msg.decode()
 
   return msgstr
 
-HOST = "localhost"  # The server's hostname or IP address
-PORT = 49152  # The port used by the server
+#
+# Calculates gdb packet checksum of string and returns as
+# an ASCII hex bytes, minus the 0x prefix
+#
+def chksum(str) :
+  checksum = 0
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST, PORT))
+  for c in range(0, len(str)) :
+    checksum = (checksum + ord(str[c])) % 256
 
-s.sendall("$M 80001c30, 4:ab56ce78#".encode())
-data = getmsg()
-print("Received " + data)
+  return hex(checksum)[2:]
 
-s.sendall("$m 80001c30,1#".encode())
-data = getmsg()
-print("Received " + data)
+#
+# Constructs gdb packet from string argument and sends over socket 'skt'
+#
+def sendmsg (str, skt) :
+  msg = '$' + str + '#' + chksum(str)
+  skt.sendall (msg.encode())
 
-s.sendall("$m 80001c31,1#".encode())
-data = getmsg()
-print("Received " + data)
+if __name__ == "__main__":
 
-s.sendall("$m 80001c32,1#".encode())
-data = getmsg()
-print("Received " + data)
+  HOST = 'localhost' # The server's hostname or IP address
+  PORT = 49152       # The port used by the server
 
-s.sendall("$m 80001c33,1#".encode())
-data = getmsg()
-print("Received " + data)
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  s.connect((HOST, PORT))
 
-s.sendall("$D#".encode())
-data = getmsg()
-print("Received " + data)
+  sendmsg('M 80001c30, 4:ab56ce78', s)
+  data = getmsg(s)
+  print("Received " + data)
+
+  sendmsg('m 80001c30,1', s)
+  data = getmsg(s)
+  print('Received ' + data)
+
+  sendmsg('m 80001c31,1', s)
+  data = getmsg(s)
+  print('Received ' + data)
+
+  sendmsg('m 80001c32,1', s)
+  data = getmsg(s)
+  print('Received ' + data)
+
+  sendmsg('m 80001c33,1', s)
+  data = getmsg(s)
+  print('Received ' + data)
+
+  sendmsg('D', s)
+  data = getmsg(s)
+  print('Received ' + data)
