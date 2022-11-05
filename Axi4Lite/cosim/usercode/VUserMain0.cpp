@@ -41,7 +41,7 @@
 #include <cstdint>
 
 // Import VProc user API
-#include "VUser.h"
+#include "OsvvmVUser.h"
 
 // I am node 0 context
 static int node  = 0;

@@ -50,4 +50,5 @@ analyze    TbAxi4Cosim.vhd
 
 analyze    TbAxi4_CoSimSizes.vhd
 
-simulate   TbAxi4_CoSimSizes [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim $::osvvm::CurrentWorkingDirectory/../cosim/usercode_size  ]
+simulate   TbAxi4_CoSimSizes [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim $::osvvm::CurrentWorkingDirectory/../cosim/socket ]
+

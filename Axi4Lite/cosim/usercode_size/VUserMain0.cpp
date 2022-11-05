@@ -44,7 +44,7 @@
 #include <vector>
 
 // Import VProc user API
-#include "VUser.h"
+#include "OsvvmVUser.h"
 
 // I am node 0 context
 static int node  = 0;
@@ -61,6 +61,31 @@ typedef struct {
 } wtrans_t;
 
 // ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
+
+static void logGdbMsg(FILE *fp, wtrans_t &w, bool rnw)
+{
+    char msg[256];
+
+    if (rnw)
+    {
+        sprintf(msg, "m%x,%d\n", w.addr, w.size/8);
+    }
+    else
+    {
+        int byteSize = w.size/8;
+        switch(w.size)
+        {
+        case 32: sprintf(msg, "M%x,%d:%08x\n", w.addr, byteSize, w.wdata); break;
+        case 16: sprintf(msg, "M%x,%d:%04x\n", w.addr, byteSize, w.wdata & 0xffff); break;
+        case  8: sprintf(msg, "M%x,%d:%02x\n", w.addr, byteSize, w.wdata & 0xff); break;
+        }
+    }
+
+    fprintf(fp, "%s", msg);
+}
+
+// ------------------------------------------------------------------------------
 // Main entry point for node 0 virtual processor software
 //
 // VUserMainX has no calling arguments. If runtime configuration required
@@ -73,9 +98,12 @@ extern "C" void VUserMain0()
     VPrint("VUserMain0(): node=%d\n", node);
 
     std::vector<wtrans_t> vec;
+    wtrans_t              wtrans;
 
     // Use node number, inverted, as the random number generator seed.
     srandom(~node);
+
+    FILE* fp = fopen("sktscript.txt", "w");
 
     while (true)
     {
@@ -97,7 +125,7 @@ extern "C" void VUserMain0()
 
             char *msg = "?????" ;
 
-            wtrans_t wtrans = vec.front();
+            wtrans = vec.front();
 
             vec.erase(vec.begin());
 
@@ -122,8 +150,6 @@ extern "C" void VUserMain0()
         // Do a write
         else
         {
-            wtrans_t wtrans;
-
             char *msg = "?????" ;
 
             uint32_t log_size  = pow(2, (random() & 0x3)%3);
@@ -147,10 +173,14 @@ extern "C" void VUserMain0()
                 case 32: VTransWrite(wtrans.addr, (uint32_t)wtrans.wdata); msg = "word";  break;
             }
 
-            // Display write trabsaction display information
+            // Display write transaction display information
             VPrint("VUserMain0: wrote %s %08X to address %08X\n", msg, wtrans.wdata, wtrans.addr);
         }
+
+        logGdbMsg(fp, wtrans, rnw);
     }
+
+    fclose(fp);
 
     // If ever got this far then sleep forever
     SLEEPFOREVER;
