@@ -116,11 +116,14 @@ architecture TestHarness of TbAxi4Memory is
   component TestCtrl is
     port (
       -- Global Signal Interface
-      nReset         : In    std_logic ;
+      nReset           : In    std_logic ;
+
+      -- Drive IntReq
+      IntReq           : Out   std_logic := '0' ;
 
       -- Transaction Interfaces
-      ManagerRec      : inout AddressBusRecType ;
-      InterruptRec   : inout AddressBusRecType ;
+      ManagerRec       : inout AddressBusRecType ;
+      InterruptRec     : inout AddressBusRecType ;
       SubordinateRec   : inout AddressBusRecType
     ) ;
   end component TestCtrl ;
@@ -190,7 +193,7 @@ begin
     -- AXI Manager Functional Interface
     AxiBus      => AxiBus,
 
-    -- Testbench Transaction Interface
+    -- Testbench Transaction Interface - From InterruptHandler
     TransRec    => VCRec
   ) ;
 
@@ -213,11 +216,14 @@ begin
   ------------------------------------------------------------
   port map (
     -- Global Signal Interface
-    nReset        => nReset,
+    nReset          => nReset,
+
+    -- Drive IntReq
+    IntReq          => IntReq, 
 
     -- Transaction Interfaces
-    ManagerRec     => ManagerRec,
-    InterruptRec  => InterruptRec,
+    ManagerRec      => ManagerRec,
+    InterruptRec    => InterruptRec,
     SubordinateRec  => SubordinateRec
   ) ;
 

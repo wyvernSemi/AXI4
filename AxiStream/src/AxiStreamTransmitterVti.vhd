@@ -19,6 +19,7 @@
 --
 --  Revision History:
 --    Date      Version    Description
+--    10/2022   2022.10    Changed enum value PRIVATE to PRIVATE_NAME due to VHDL-2019 keyword conflict.   
 --    05/2022   2022.05    Updated FIFOs so they are Search => PRIVATE
 --    03/2022   2022.03    Updated calls to NewID for AlertLogID and FIFOs
 --                         Updated handling of TStrb
@@ -163,7 +164,7 @@ begin
 --    ProtocolID      <= NewID("Protocol Error", ID ) ;
 --    DataCheckID     <= NewID("Data Check", ID ) ;
     BusFailedID     <= NewID("No response",  ID) ;
-    TransmitFifo    <= NewID("TransmitFifo", ID, ReportMode => DISABLED, Search => PRIVATE) ; 
+    TransmitFifo    <= NewID("TransmitFifo", ID, ReportMode => DISABLED, Search => PRIVATE_NAME) ; 
     wait ;
   end process Initialize ;
 
@@ -181,7 +182,7 @@ begin
     variable User : std_logic_vector(TUser'range) ;
   begin
     wait for 0 ns ; 
-    TransRec.BurstFifo <= NewID("TxBurstFifo", ModelID, Search => PRIVATE) ;
+    TransRec.BurstFifo <= NewID("TxBurstFifo", ModelID, Search => PRIVATE_NAME) ;
     
     DispatchLoop : loop 
       WaitForTransaction(

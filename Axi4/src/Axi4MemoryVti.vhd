@@ -19,6 +19,7 @@
 --
 --  Revision History:
 --    Date      Version    Description
+--    10/2022   2022.10    Changed enum value PRIVATE to PRIVATE_NAME due to VHDL-2019 keyword conflict.   
 --    05/2022   2022.05    Updated FIFOs so they are Search => PRIVATE
 --    03/2022   2022.03    Updated calls to NewID for AlertLogID and FIFOs
 --    02/2022   2022.02    Replaced to_hstring with to_hxstring
@@ -198,11 +199,11 @@ begin
 
     -- FIFOs get an AlertLogID with NewID, however, it does not print in ReportAlerts (due to ReportMode)
     --   FIFOS only generate usage type errors 
-    WriteAddressFifo    <= NewID("WriteAddressFIFO",   ID, ReportMode => DISABLED, Search => PRIVATE);
-    WriteDataFifo       <= NewID("WriteDataFifo",      ID, ReportMode => DISABLED, Search => PRIVATE);
-    WriteResponseFifo   <= NewID("WriteResponseFifo",  ID, ReportMode => DISABLED, Search => PRIVATE);
-    ReadAddressFifo     <= NewID("ReadAddressFifo",    ID, ReportMode => DISABLED, Search => PRIVATE);
-    ReadDataFifo        <= NewID("ReadDataFifo",       ID, ReportMode => DISABLED, Search => PRIVATE);
+    WriteAddressFifo    <= NewID("WriteAddressFIFO",   ID, ReportMode => DISABLED, Search => PRIVATE_NAME);
+    WriteDataFifo       <= NewID("WriteDataFifo",      ID, ReportMode => DISABLED, Search => PRIVATE_NAME);
+    WriteResponseFifo   <= NewID("WriteResponseFifo",  ID, ReportMode => DISABLED, Search => PRIVATE_NAME);
+    ReadAddressFifo     <= NewID("ReadAddressFifo",    ID, ReportMode => DISABLED, Search => PRIVATE_NAME);
+    ReadDataFifo        <= NewID("ReadDataFifo",       ID, ReportMode => DISABLED, Search => PRIVATE_NAME);
     wait ;
   end process InitalizeAlertLogIDs ;
 

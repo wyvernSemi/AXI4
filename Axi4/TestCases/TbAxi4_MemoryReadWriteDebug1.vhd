@@ -1,5 +1,5 @@
 --
---  File Name:         TbAxi4_BasicBurst.vhd
+--  File Name:         TbAxi4_MemoryReadWriteDebug1.vhd
 --  Design Unit Name:  Architecture of TestCtrl
 --  Revision:          OSVVM MODELS STANDARD VERSION
 --
@@ -9,7 +9,7 @@
 --
 --
 --  Description:
---      Testing of Burst Features in AXI Model
+--      Test transaction source
 --
 --
 --  Developed by:
@@ -19,13 +19,14 @@
 --
 --  Revision History:
 --    Date      Version    Description
---    20/2020   2020.04    Initial revision
+--    09/2017   2017       Initial revision
+--    01/2020   2020.01    Updated license notice
 --    12/2020   2020.12    Updated signal and port names
 --
 --
 --  This file is part of OSVVM.
 --  
---  Copyright (c) 2020 by SynthWorks Design Inc.  
+--  Copyright (c) 2017 - 2021 by SynthWorks Design Inc.  
 --  
 --  Licensed under the Apache License, Version 2.0 (the "License");
 --  you may not use this file except in compliance with the License.
@@ -40,15 +41,10 @@
 --  limitations under the License.
 --  
 
-architecture BasicBurst of TestCtrl is
+architecture MemoryReadWrite1 of TestCtrl is
 
-  signal TestDone : integer_barrier := 1 ;
-  
---  alias WriteBurstFifo is <<variable .TbAxi4.Axi4Manager_1.WriteBurstFifo : osvvm.ScoreboardPkg_slv.ScoreboardPType>> ;
-
---  alias AxiLiteBus is <<signal .TbAxi4.AxiLiteBus : Axi4RecType>> ;
-
-
+  signal TestDone, ManagerDone : integer_barrier := 1 ;
+   
 begin
 
   ------------------------------------------------------------
@@ -58,13 +54,13 @@ begin
   ControlProc : process
   begin
     -- Initialization of test
-    SetTestName("TbAxi4_BasicBurst") ;
+    SetTestName("TbAxi4_MemoryReadWriteDebug1") ;
     SetLogEnable(PASSED, TRUE) ;    -- Enable PASSED logs
     SetLogEnable(INFO, TRUE) ;    -- Enable INFO logs
 
     -- Wait for testbench initialization 
     wait for 0 ns ;  wait for 0 ns ;
-    TranscriptOpen(OSVVM_RESULTS_DIR & "TbAxi4_BasicBurst.txt") ;
+    TranscriptOpen(OSVVM_RESULTS_DIR & "TbAxi4_MemoryReadWriteDebug1.txt") ;
     SetTranscriptMirror(TRUE) ; 
 
     -- Wait for Design Reset
@@ -72,14 +68,14 @@ begin
     ClearAlerts ;
 
     -- Wait for test to finish
-    WaitForBarrier(TestDone, 1 ms) ;
-    AlertIf(now >= 1 ms, "Test finished due to timeout") ;
+    WaitForBarrier(TestDone, 35 ms) ;
+    AlertIf(now >= 35 ms, "Test finished due to timeout") ;
     AlertIf(GetAffirmCount < 1, "Test is not Self-Checking");
     
     
     TranscriptClose ; 
     -- Printing differs in different simulators due to differences in process order execution
-    -- AlertIfDiff("./results/TbAxi4_BasicBurst.txt", "../AXI4/Axi4/testbench/validated_results/TbAxi4_BasicBurst.txt", "") ; 
+    -- AlertIfDiff("./results/TbAxi4_MemoryReadWriteDebug1.txt", "../AXI4/Axi4/testbench/validated_results/TbAxi4_MemoryReadWriteDebug1.txt", "") ; 
 
     EndOfTestReports ; 
     std.env.stop ; 
@@ -92,18 +88,23 @@ begin
   ------------------------------------------------------------
   ManagerProc : process
     variable Data : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;
-
   begin
     wait until nReset = '1' ;  
     WaitForClock(ManagerRec, 2) ; 
-    log("Write with ByteAddr = 0, 4 Bytes") ;
-    for i in 3 to 10 loop
-      WriteBurstFifo.Push(to_slv(i, 8)) ;
-    end loop ;
-    WriteBurst(ManagerRec, X"0000_1002", 8) ;
-    
---    WaitForClock(ManagerRec, 18) ; 
-    
+    log("Write and Read with ByteAddr = 0, 4 Bytes") ;
+    Write(ManagerRec,      X"0000_0400", X"04" ) ;
+    ReadCheck(ManagerRec,  X"0000_0400", X"04" ) ;
+    Write(ManagerRec,      X"0000_0000", X"01" ) ;
+    ReadCheck(ManagerRec,  X"0000_0000", X"01" ) ;
+    Write(ManagerRec,      X"0000_0800", X"08" ) ;
+    ReadCheck(ManagerRec,  X"0000_0800", X"08" ) ;
+    Write(ManagerRec,      X"0000_0000", X"02" ) ;
+    ReadCheck(ManagerRec,  X"0000_0000", X"02" ) ;
+    Write(ManagerRec,      X"0000_0C00", X"0C" ) ;
+    ReadCheck(ManagerRec,  X"0000_0C00", X"0C" ) ;
+    Write(ManagerRec,      X"0000_0000", X"03" ) ;
+    ReadCheck(ManagerRec,  X"0000_0000", X"03" ) ;
+
     -- Wait for outputs to propagate and signal TestDone
     WaitForClock(ManagerRec, 2) ;
     WaitForBarrier(TestDone) ;
@@ -112,45 +113,33 @@ begin
 
 
   ------------------------------------------------------------
-  -- SubordinateProc
-  --   Generate transactions for AxiSubordinate
+  -- MemoryProc
+  --   Generate transactions for AxiMemory
   ------------------------------------------------------------
-  SubordinateProc : process
+  MemoryProc : process
     variable Addr : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0) ;
-    variable Data : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;  
---    alias  WReady    : std_logic        is AxiLiteBus.WriteData.WReady ;
-    
+    variable Data : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;   
   begin
---    WReady <= 'Z' ; 
-    WaitForClock(SubordinateRec, 2) ; 
-    -- Write and Read with ByteAddr = 0, 4 Bytes
-    GetWrite(SubordinateRec, Addr, Data) ;
-    AffirmIfEqual(Addr, X"0000_1002", "Subordinate Write Addr: ") ;
-    AffirmIfEqual(Data, X"0403_0000", "Subordinate Write Data: ") ;
-    GetWriteData(SubordinateRec, Data) ;
-    AffirmIfEqual(Data, X"0807_0605", "Subordinate Write Data: ") ;
-    GetWriteData(SubordinateRec, Data) ;
-    AffirmIfEqual(Data, X"0000_0A09", "Subordinate Write Data: ") ;
-
-    
-    -- Force the Subordinate to allow the bus to transfer the write burst
---    WReady <= force '1' ; 
-    
---    WaitForClock(SubordinateRec, 18) ; 
-
+    WaitForClock(SubordinateRec, 2) ;
+        
     -- Wait for outputs to propagate and signal TestDone
---    WaitForClock(SubordinateRec, 2) ;
+    WaitForClock(SubordinateRec, 2) ;
     WaitForBarrier(TestDone) ;
     wait ;
-  end process SubordinateProc ;
+  end process MemoryProc ;
 
 
-end BasicBurst ;
+end MemoryReadWrite1 ;
 
-Configuration TbAxi4_BasicBurst of TbAxi4 is
+library OSVVM_AXI4 ;
+
+Configuration TbAxi4_MemoryReadWriteDebug1 of TbAxi4Memory is
   for TestHarness
     for TestCtrl_1 : TestCtrl
-      use entity work.TestCtrl(BasicBurst) ; 
+      use entity work.TestCtrl(MemoryReadWrite1) ; 
     end for ; 
+--!!    for Subordinate_1 : Axi4Subordinate 
+--!!      use entity OSVVM_AXI4.Axi4Memory ; 
+--!!    end for ; 
   end for ; 
-end TbAxi4_BasicBurst ; 
+end TbAxi4_MemoryReadWriteDebug1 ; 
