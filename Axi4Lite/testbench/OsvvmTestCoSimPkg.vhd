@@ -79,8 +79,7 @@ procedure CoSimAccess (
   ------------------------------------------------------------
   ------------------------------------------------------------
 procedure CoSimTrans (
-  signal   ManagerRec      : inout  AddressBusRecType ;
-  variable RdData          : inout  std_logic_vector
+  signal   ManagerRec      : inout  AddressBusRecType 
   ) ;
 
 end package OsvvmTestCoSimPkg ;
@@ -175,8 +174,7 @@ procedure CoSimAccess (
 
 procedure CoSimTrans (
   -- Transaction  interface
-  signal   ManagerRec      : inout  AddressBusRecType ;
-  variable RdData          : inout  std_logic_vector
+  signal   ManagerRec      : inout  AddressBusRecType 
   ) is
 
   variable VPDataOut       : integer ;
@@ -190,18 +188,23 @@ procedure CoSimTrans (
   variable VPDataWidth     : integer ;
   variable VPAddrWidth     : integer ;
 
-  variable WrData          : std_logic_vector (DATA_WIDTH_MAX-1 downto 0);
-  variable Address         : std_logic_vector (ADDR_WIDTH_MAX-1 downto 0);
+  variable RdData          : std_logic_vector (DATA_WIDTH_MAX-1 downto 0) ;
+  variable WrData          : std_logic_vector (DATA_WIDTH_MAX-1 downto 0) ;
+  variable Address         : std_logic_vector (ADDR_WIDTH_MAX-1 downto 0) ;
   variable Interrupt       : integer := 0 ; -- currently unconnected
 
   begin
 
+    -- RdData won't have persisted from last call, so refetch from ManagerRec
+    -- which will have persisted (and is not yet updated)
+    RdData       := SafeResize(ManagerRec.DataFromModel, RdData'length) ;
+    
     -- Sample the read data from last access, saved in RdData inout port
-    if RdData'length > 32 then
+    if ManagerRec.DataWidth > 32 then
       VPDataIn   := to_integer(signed(RdData(31 downto  0))) ;
       VPDataInHi := to_integer(signed(RdData(RdData'length-1 downto 32))) ;
     else
-      VPDataIn   := to_integer(signed(RdData)) ;
+      VPDataIn   := to_integer(signed(RdData(31 downto 0))) ;
       VPDataInHi := 0;
     end if;
 
@@ -218,10 +221,6 @@ procedure CoSimTrans (
     
     WrData(31 downto 0 )  := std_logic_vector(to_signed(VPDataOut,   32)) ;
     WrData(63 downto 32)  := std_logic_vector(to_signed(VPDataOutHi, 32)) ;
-    
-    -- Clear saved read data value so upp bits invalidated if
-    -- transaction narrower than last one
-    RdData := std_logic_vector(to_signed(0, RdData'length));
 
     -- Do the operation using the transaction interface
     if VPRW /= 0 then
