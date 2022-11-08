@@ -109,7 +109,6 @@ begin
     variable counts         : integer;
 
     -- CoSimSizes variables
-    variable ReadData       : std_logic_vector(63 downto 0) ;
     variable RnW            : integer ;
     variable Ticks          : integer ;
 
@@ -126,7 +125,7 @@ begin
     WaitForClock(ManagerRec, 2) ;
 
     -- Distribution for Test Operations
-    counts := 1000 ;
+    counts := 500 ;
 
     OperationLoop : loop
 
@@ -136,7 +135,7 @@ begin
       end if ;
 
       -- Call CoSimTrans procedure to generate an access from the running VProc program
-      CoSimTrans (ManagerRec, ReadData);
+      CoSimTrans (ManagerRec);
 
       -- Update counts
       counts := counts - 1;
