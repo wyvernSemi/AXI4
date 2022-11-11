@@ -1,13 +1,13 @@
-#  File Name:         RunAllTests.pro
+#  File Name:         RunCoSimSktTests.pro
 #  Revision:          OSVVM MODELS STANDARD VERSION
 #
-#  Maintainer:        Jim Lewis      email:  jim@synthworks.com
+#  Maintainer:        Simon Southwell      email:  simon.southwell@gmail.com
 #  Contributor(s):
-#     Jim Lewis      jim@synthworks.com
+#     Simon Southwell      simon.southwell@gmail.com
 #
 #
 #  Description:
-#        Script to run all Axi4 Lite tests  
+#        Script to run Axi4 Lite co-sim socket test  
 #
 #  Developed for:
 #        SynthWorks Design Inc.
@@ -17,8 +17,7 @@
 #
 #  Revision History:
 #    Date      Version    Description
-#     1/2019   2019.01    Compile Script for OSVVM
-#     1/2020   2020.01    Updated Licenses to Apache
+#     10/2022  ????.??    Compile Script for OSVVM co-sim
 #
 #
 #  This file is part of OSVVM.
