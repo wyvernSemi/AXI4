@@ -3,9 +3,9 @@
 --  Design Unit Name:  TbAxi4
 --  Revision:          OSVVM MODELS STANDARD VERSION
 --
---  Maintainer:        Jim Lewis      email:  jim@synthworks.com
+--  Maintainer:          Simon Southwell  email: simon.southwell@gmail.com
 --  Contributor(s):
---     Jim Lewis      jim@synthworks.com
+--     Simon Southwell  simon.southwell@gmail.com
 --
 --
 --  Description:
