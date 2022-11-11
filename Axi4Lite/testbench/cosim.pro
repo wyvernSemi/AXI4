@@ -47,7 +47,7 @@ analyze    OsvvmTestCoSimPkg.vhd
 
 analyze    TestCtrl_e.vhd
 analyze    TbAxi4Cosim.vhd
+analyze    TbAxi4_CoSim.vhd
 
-analyze    TbAxi4_CoSimSizes.vhd
-
-simulate   TbAxi4_CoSimSizes [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim $::osvvm::CurrentWorkingDirectory/../cosim/usercode_size  ]
+simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim          \
+                                   $::osvvm::CurrentWorkingDirectory/../cosim/usercode_size  ]
