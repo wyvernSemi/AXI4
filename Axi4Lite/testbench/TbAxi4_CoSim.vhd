@@ -3,9 +3,8 @@
 --  Design Unit Name:    Architecture of TestCtrl
 --  Revision:            OSVVM MODELS STANDARD VERSION
 --
---  Maintainer:          Jim Lewis      email:  jim@synthworks.com
+--  Maintainer:          Simon Southwell  email: simon.southwell@gmail.com
 --  Contributor(s):
---     Jim Lewis        jim@synthwporks.com
 --     Simon Southwell  simon.southwell@gmail.com
 --
 --
@@ -40,20 +39,23 @@
 --  limitations under the License.
 --
 
-use work.OsvvmVprocPkg.all;
-use work.OsvvmTestCoSimPkg.all;
+library osvvm_TbAxi4Lite ;
+
+use osvvm_TbAxi4Lite.OsvvmVprocPkg.all;
+use osvvm_TbAxi4Lite.OsvvmTestCoSimPkg.all;
+
+library osvvm_axi4 ;
+
+  use osvvm_axi4.Axi4OptionsPkg.all ;
+  use osvvm_axi4.Axi4ModelPkg.all ;
+  use osvvm_axi4.Axi4InterfaceCommonPkg.all ;
+  use osvvm_axi4.Axi4LiteInterfacePkg.all ;
+  use osvvm_axi4.Axi4CommonPkg.all ;
 
 architecture CoSim of TestCtrl is
-
+    
   signal TestDone : integer_barrier := 1 ;
   signal Node     : integer := 0 ;
-
-  type OperationType is (WRITE_OP, READ_OP) ;  -- Add TEST_DONE?
-  constant WRITE_OP_INDEX : integer := OperationType'pos(WRITE_OP) ;
-  constant READ_OP_INDEX  : integer := OperationType'pos(READ_OP) ;
-  subtype OperationSlvType is std_logic_vector(0 downto 0) ;
-
-  shared variable OperationFifo  : osvvm.ScoreboardPkg_slv.ScoreboardPType ;
 
   signal TestActive : boolean := TRUE ;
 
@@ -103,12 +105,9 @@ begin
   ManagerProc : process
     variable OpRV           : RandomPType ;
     variable WaitForClockRV : RandomPType ;
-    variable counts         : integer_vector(0 to OperationType'Pos(OperationType'Right)) ;
-    
+    variable counts         : integer;
+
     -- CoSim variables
-    variable Address        : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0) ;
-    variable Data           : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;
-    variable ReadData       : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;
     variable RnW            : integer ;
     variable Ticks          : integer ;
 
@@ -125,7 +124,7 @@ begin
     WaitForClock(ManagerRec, 2) ;
 
     -- Distribution for Test Operations
-    counts := (WRITE_OP_INDEX => 500, READ_OP_INDEX => 500) ;
+    counts := 500 ;
 
     OperationLoop : loop
 
@@ -134,38 +133,15 @@ begin
         WaitForClock(ManagerRec, WaitForClockRV.RandInt(1, 5)) ;
       end if ;
 
-      -- Call CoSim procedure to generate an access from the running VProc program
-      CoSimAccess (-- Transaction Interface
-                   ManagerRec,
-      
-                   -- Test bench interface
-                   OperationFifo,
-                   OpRv,
-                   OperationCount,
-                   
-                   --Check and logging info
-                   ReadData,
-                   Data,
-                   Address,
-                   RnW);
+      -- Call CoSimTrans procedure to generate an access from the running VProc program
+      CoSimTrans (ManagerRec);
 
-      -- Update counts and check on reads
-      case OperationType'val(RnW) is
-        when WRITE_OP =>
-          counts(WRITE_OP_INDEX) := counts(WRITE_OP_INDEX) - 1 ;
-          --Log("Starting: Manager Write with Address: " & to_hstring(Address) & "  Data: " & to_hstring(Data) ) ;
+      -- Update counts
+      counts := counts - 1;
 
-        when READ_OP =>
-          counts(READ_OP_INDEX) := counts(READ_OP_INDEX) - 1 ;
-          --Log("Starting: Manager Read with Address: " & to_hstring(Address) & "  Data: " & to_hstring(Data) ) ;
-          AffirmIf(ReadData = Data, "AXI Manager Read Data: "& to_hstring(ReadData),
-                 "  Expected: " & to_hstring(Data)) ;
+      -- Finish when counts == 0
+      exit when counts = 0 ;
 
-        when others =>
-          Alert("Invalid Operation Generated", FAILURE) ;
-      end case ;
-
-      exit when counts(0) = 0 or counts(1) = 0 ;
     end loop OperationLoop ;
 
     TestActive <= FALSE ;
@@ -180,69 +156,9 @@ begin
     wait ;
   end process ManagerProc ;
 
-
-  ------------------------------------------------------------
-  -- SubordinateProc
-  --   Generate transactions for AxiSubordinate
-  ------------------------------------------------------------
-  SubordinateProc : process
-    variable WaitForClockRV         : RandomPType ;
-    variable OperationSlv   : OperationSlvType ;
-    variable Address        : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0) ;
-    variable ActualAddress  : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0) ;
-    variable Data           : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;
-    variable WriteData      : std_logic_vector(AXI_DATA_WIDTH-1 downto 0) ;
-  begin
-    WaitForClockRV.InitSeed(WaitForClockRV'instance_name) ;
-
-    OperationLoop : loop
-      if OperationFifo.empty then
-        WaitForToggle(OperationCount) ;
-      end if ;
-
-      exit OperationLoop when TestActive = FALSE ;
-
-      -- 20 % of the time add a no-op cycle with a delay of 1 to 5 clocks
-      if WaitForClockRV.DistInt((8, 2)) = 1 then
-        WaitForClock(SubordinateRec, WaitForClockRV.RandInt(1, 5)) ;
-      end if ;
-
-      -- Get the Operation
-      (OperationSlv, Address, Data) := OperationFifo.pop ;
-
-      -- Do the Operation
-      case OperationType'val(to_integer(OperationSlv)) is
-        when WRITE_OP =>
-          -- Log("Starting: Subordinate Write with Expected Address: " & to_hstring(Address) & "  Data: " & to_hstring(Data) ) ;
-          GetWrite(SubordinateRec, ActualAddress, WriteData) ;
-          AffirmIf(ActualAddress = Address, "AXI Subordinate Write Address: " & to_hstring(ActualAddress),
-                   "  Expected: " & to_hstring(Address)) ;
-          AffirmIf(WriteData = Data, "AXI Subordinate Write Data: "& to_hstring(WriteData),
-                   "  Expected: " & to_hstring(Data)) ;
-
-        when READ_OP =>
-          -- Log("Starting: Subordinate Read with Expected Address: " & to_hstring(Address) & "  Data: " & to_hstring(Data) ) ;
-          SendRead(SubordinateRec, ActualAddress, Data) ;
-          AffirmIf(ActualAddress = Address, "AXI Subordinate Read Address: " & to_hstring(ActualAddress),
-                   "  Expected: " & to_hstring(Address)) ;
-
-        when others =>
-          Alert("Invalid Operation Generated", FAILURE) ;
-
-      end case ;
-
-    end loop OperationLoop ;
-
-    -- Wait for outputs to propagate and signal TestDone
-    -- WaitForClock(SubordinateRec, 2) ;
-    WaitForBarrier(TestDone) ;
-    wait ;
-  end process SubordinateProc ;
-
-
 end CoSim ;
 
-Configuration TbAxi4_CoSim of TbAxi4 is
+Configuration TbAxi4_CoSim of TbAxi4Cosim is
   for TestHarness
     for TestCtrl_1 : TestCtrl
       use entity work.TestCtrl(CoSim) ;
