@@ -34,9 +34,9 @@ extern "C" int VTick(uint32_t, uint32_t)
 
 extern "C" void VUserMain0()
 {
-    osvvm_cosim_skt skt;
+    OsvvmCosimSkt skt;
 
-    if (skt.process_pkts() != osvvm_cosim_skt::OSVVM_COSIM_OK)
+    if (skt.ProcessPkts() != OsvvmCosimSkt::OSVVM_COSIM_OK)
     {
         fprintf(stderr, "***ERROR: socket exited with bad status\n");
     }
@@ -56,6 +56,5 @@ int main (int argc, char* argv[])
 
     return 0;
 }
-
 
 #endif
