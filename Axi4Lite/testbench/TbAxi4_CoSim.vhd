@@ -124,7 +124,7 @@ begin
     WaitForClock(ManagerRec, 2) ;
 
     -- Distribution for Test Operations
-    counts := 500 ;
+    counts := 1000 ;
 
     OperationLoop : loop
 
