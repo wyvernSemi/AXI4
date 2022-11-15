@@ -39,14 +39,10 @@
 
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
-library    osvvm_TbAxi4Lite
+library    osvvm_TbAxi4
 
 analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
-analyze    OsvvmTestCommonPkg.vhd
-analyze    OsvvmTestCoSimPkg.vhd
-
-analyze    TestCtrl_e.vhd
-analyze    TbAxi4Cosim.vhd
+analyze    ../testbench/OsvvmTestCoSimPkg.vhd
 analyze    TbAxi4_CoSim.vhd
 
 simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim \

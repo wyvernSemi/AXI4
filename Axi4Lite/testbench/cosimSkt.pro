@@ -50,5 +50,5 @@ analyze    TbAxi4Cosim.vhd
 analyze    TbAxi4_Cosim.vhd
 
 simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim  \
-                                   $::osvvm::CurrentWorkingDirectory/../cosim/socket ]
+                                   tests/socket ]
 
