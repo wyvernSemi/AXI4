@@ -134,7 +134,7 @@ begin
       end if ;
 
       -- Call CoSimTrans procedure to generate an access from the running VProc program
-      CoSimTrans (ManagerRec);
+      CoSimTrans (ManagerRec, Ticks);
 
       -- Update counts
       counts := counts - 1;
