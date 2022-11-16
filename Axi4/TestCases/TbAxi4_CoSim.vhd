@@ -39,10 +39,9 @@
 --  limitations under the License.
 --
 
-library osvvm_TbAxi4 ;
-
-use osvvm_TbAxi4.OsvvmVprocPkg.all;
-use osvvm_TbAxi4.OsvvmTestCoSimPkg.all;
+library osvvm_tbcosim ;
+  use osvvm_tbcosim.OsvvmVprocPkg.all ;
+  use osvvm_tbcosim.OsvvmTestCoSimPkg.all;
 
 library osvvm_axi4 ;
 
