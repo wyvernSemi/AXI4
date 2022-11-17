@@ -51,13 +51,14 @@ library osvvm_axi4 ;
   use osvvm_axi4.Axi4CommonPkg.all ;
 
 architecture CoSim of TestCtrl is
+
+--  constant BURST_MODE     : AddressBusFifoBurstModeType := ADDRESS_BUS_BURST_WORD_MODE ;   
+  constant BURST_MODE     : AddressBusFifoBurstModeType := ADDRESS_BUS_BURST_BYTE_MODE ;
     
-  signal TestDone : integer_barrier := 1 ;
-  signal Node     : integer := 0 ;
-
-  signal TestActive : boolean := TRUE ;
-
-  signal OperationCount : integer := 0 ;
+  signal   TestDone       : integer_barrier             := 1 ;
+  signal   Node           : integer                     := 0 ;
+  signal   TestActive     : boolean                     := TRUE ;
+  signal   OperationCount : integer                     := 0 ;
 
 begin
 
@@ -115,6 +116,8 @@ begin
 
     -- Initialise VProc code
     Vinit(0);
+
+    SetBurstMode(ManagerRec, BURST_MODE) ;
 
     -- Find exit of reset
     wait until nReset = '1' ;
