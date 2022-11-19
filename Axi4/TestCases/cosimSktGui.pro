@@ -43,12 +43,9 @@ library    osvvm_tbcosim
 analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
 analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
-library    osvvm_TbAxi4Lite
-analyze    OsvvmTestCommonPkg.vhd
-analyze    TestCtrl_e.vhd
-analyze    TbAxi4Memory.vhd
+library    osvvm_TbAxi4
 analyze    TbAxi4_CoSim.vhd
 
-simulate   TbAxi4_CoSim [ mk_vproc_skt $::osvvm::CurrentWorkingDirectory/../../../CoSim  \
-                                       tests/socket ]
+simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim  \
+                                   tests/socket ]
 

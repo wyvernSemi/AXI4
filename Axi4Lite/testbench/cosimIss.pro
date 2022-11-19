@@ -49,5 +49,6 @@ analyze    TestCtrl_e.vhd
 analyze    TbAxi4Memory.vhd
 analyze    TbAxi4_CoSim.vhd
 
-simulate   TbAxi4_CoSim
+simulate   TbAxi4_CoSim [ mk_vproc_lib $::osvvm::CurrentWorkingDirectory/../../../CoSim \
+                                        tests/iss  rv32 ]
 
