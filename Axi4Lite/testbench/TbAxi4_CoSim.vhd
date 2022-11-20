@@ -53,12 +53,10 @@ library osvvm_axi4 ;
 
 architecture CoSim of TestCtrl is
     
-  signal TestDone : integer_barrier := 1 ;
-  signal Node     : integer := 0 ;
-
-  signal TestActive : boolean := TRUE ;
-
-  signal OperationCount : integer := 0 ;
+  signal TestDone       : integer_barrier := 1 ;
+  signal Node           : integer         := 0 ;
+  signal TestActive     : boolean         := TRUE ;
+  signal OperationCount : integer         := 0 ;
 
 begin
 
@@ -104,11 +102,11 @@ begin
   ManagerProc : process
     variable OpRV           : RandomPType ;
     variable WaitForClockRV : RandomPType ;
-    variable counts         : integer;
 
     -- CoSim variables
     variable RnW            : integer ;
-    variable Ticks          : integer ;
+    variable Ticks          : integer := 0;
+    variable Done           : integer := 0;
 
   begin
     -- Initialize Randomization Objects
@@ -116,14 +114,11 @@ begin
     WaitForClockRV.InitSeed(WaitForClockRV'instance_name) ;
 
     -- Initialise VProc code
-    Vinit(0);
+    Vinit(Node);
 
     -- Find exit of reset
     wait until nReset = '1' ;
     WaitForClock(ManagerRec, 2) ;
-
-    -- Distribution for Test Operations
-    counts := 1000 ;
 
     OperationLoop : loop
 
@@ -133,13 +128,10 @@ begin
       end if ;
 
       -- Call CoSimTrans procedure to generate an access from the running VProc program
-      CoSimTrans (ManagerRec, Ticks);
-
-      -- Update counts
-      counts := counts - 1;
+      CoSimTrans (ManagerRec, Ticks, Done);
 
       -- Finish when counts == 0
-      exit when counts = 0 ;
+      exit when Ticks = 0 and Done /= 0;
 
     end loop OperationLoop ;
 
