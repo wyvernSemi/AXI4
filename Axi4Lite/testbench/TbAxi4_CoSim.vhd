@@ -107,6 +107,7 @@ begin
     variable RnW            : integer ;
     variable Ticks          : integer := 0;
     variable Done           : integer := 0;
+    variable Error          : integer := 0;
 
   begin
     -- Initialize Randomization Objects
@@ -128,7 +129,9 @@ begin
       end if ;
 
       -- Call CoSimTrans procedure to generate an access from the running VProc program
-      CoSimTrans (ManagerRec, Ticks, Done);
+      CoSimTrans (ManagerRec, Ticks, Done, Error);
+      
+      AlertIf(Error /= 0, "CoSimTrans flagged an error") ;
 
       -- Finish when counts == 0
       exit when Ticks = 0 and Done /= 0;
