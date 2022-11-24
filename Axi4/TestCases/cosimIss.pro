@@ -40,12 +40,19 @@
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library    osvvm_tbcosim
-analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
+
+if {$::osvvm::ScriptBaseName eq "GHDL"} {
+  analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
+  set rvlib rv32x64
+} else {
+  analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
+  set rvlib rv32
+}
+
 analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
 library    osvvm_TbAxi4
 analyze    TbAxi4_CoSim.vhd
 
-simulate   TbAxi4_CoSim  [ mk_vproc_lib $::osvvm::CurrentWorkingDirectory/../../../CoSim \
-                                        tests/iss  rv32 ]
+simulate   TbAxi4_CoSim  [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss ${rvlib} ]
 

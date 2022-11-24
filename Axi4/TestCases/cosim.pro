@@ -40,11 +40,16 @@
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library    osvvm_tbcosim
-analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
+
+if {$::osvvm::ScriptBaseName eq "GHDL"} {
+  analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
+} else {
+  analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
+}
+
 analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
 library    osvvm_TbAxi4
 analyze    TbAxi4_CoSim.vhd
 
-simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim \
-                                   tests/usercode_size  ]
+simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_size ]
