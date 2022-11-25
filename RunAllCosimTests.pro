@@ -6,4 +6,4 @@ include ./Axi4Lite/RunCoSimSktTests.pro
 include ./Axi4/RunCoSimTests.pro
 include ./Axi4/RunCoSimIssTests.pro
 include ./Axi4/RunCoSimBurstTests.pro
-include ./Axi4/RunCoSimSktTests.pro
+#include ./Axi4/RunCoSimSktTests.pro

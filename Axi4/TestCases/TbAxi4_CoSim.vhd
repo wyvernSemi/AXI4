@@ -117,7 +117,7 @@ begin
     WaitForClockRV.InitSeed(WaitForClockRV'instance_name) ;
 
     -- Initialise VProc code
-    Vinit(Node);
+    VInit(Node);
 
     SetBurstMode(ManagerRec, BURST_MODE) ;
 
