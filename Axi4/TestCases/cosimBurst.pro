@@ -41,7 +41,7 @@ source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tc
 
 library    osvvm_tbcosim
 
-if {$::osvvm::ScriptBaseName eq "GHDL"} {
+if {$::osvvm::ToolName eq "GHDL"} {
   analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
 } else {
   analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
