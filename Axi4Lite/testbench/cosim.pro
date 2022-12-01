@@ -41,11 +41,13 @@ source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tc
 
 library    osvvm_tbcosim
 
-if {$::osvvm::ToolName eq "GHDL"} {
-  analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
-} else {
-  analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
-}
+#if {$::osvvm::ToolName eq "GHDL"} {
+#  analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
+#} else {
+#  analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
+#}
+
+analyzeForeignProcs
 
 analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
