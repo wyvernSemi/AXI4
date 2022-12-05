@@ -54,9 +54,9 @@ architecture CoSim of TestCtrl is
 
 --  constant BURST_MODE     : AddressBusFifoBurstModeType := ADDRESS_BUS_BURST_WORD_MODE ;   
   constant BURST_MODE     : AddressBusFifoBurstModeType := ADDRESS_BUS_BURST_BYTE_MODE ;
+  constant Node           : integer         := 0 ;
     
   signal   TestDone       : integer_barrier := 1 ;
-  signal   Node           : integer         := 0 ;
   signal   TestActive     : boolean         := TRUE ;
   signal   OperationCount : integer         := 0 ;
 
@@ -107,17 +107,18 @@ begin
 
     -- CoSim variables
     variable RnW            : integer ;
-    variable Ticks          : integer := 0;
-    variable Done           : integer := 0;
-    variable Error          : integer := 0;
-
+    variable Ticks          : integer := 0 ;
+    variable Done           : integer := 0 ;
+    variable Error          : integer := 0 ;
+    variable IntReq         : boolean := false ;
+    variable NodeNum        : integer := Node ;
   begin
     -- Initialize Randomization Objects
     OpRV.InitSeed(OpRv'instance_name) ;
     WaitForClockRV.InitSeed(WaitForClockRV'instance_name) ;
 
     -- Initialise VProc code
-    VInit(Node);
+    CoSimInit(NodeNum);
 
     SetBurstMode(ManagerRec, BURST_MODE) ;
 
@@ -128,12 +129,12 @@ begin
     OperationLoop : loop
 
       -- 20 % of the time add a no-op cycle with a delay of 1 to 5 clocks
-      if WaitForClockRV.DistInt((8, 2)) = 1 then
+      if WaitForClockRV.DistInt((8, 2)) = 1 and Ticks = 0 then
         WaitForClock(ManagerRec, WaitForClockRV.RandInt(1, 5)) ;
       end if ;
 
       -- Call CoSimTrans procedure to generate an access from the running VProc program
-      CoSimTrans (ManagerRec, Ticks, Done, Error);
+      CoSimTrans (ManagerRec, Ticks, Done, Error, IntReq, NodeNum);
       
       AlertIf(Error /= 0, "CoSimTrans flagged an error") ;
 
@@ -143,6 +144,7 @@ begin
     end loop OperationLoop ;
 
     TestActive <= FALSE ;
+    
     -- Allow Subordinate to catch up before signaling OperationCount (needed when WRITE_OP is last)
     -- wait for 0 ns ;  -- this is enough
     WaitForClock(ManagerRec, 2) ;
