@@ -40,12 +40,8 @@
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library    osvvm_tbcosim
-
 analyzeForeignProcs
-analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
 library    osvvm_TbAxi4
-analyze    TbAxi4_CoSim.vhd
-
-simulate   TbAxi4_CoSim [ mk_vproc_skt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket ]
+RunTest    TbAxi4_CoSim.vhd [ mk_vproc_skt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket ]
 

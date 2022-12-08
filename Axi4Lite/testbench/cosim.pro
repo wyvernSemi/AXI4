@@ -40,21 +40,10 @@
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library    osvvm_tbcosim
-
-#if {$::osvvm::ToolName eq "GHDL"} {
-#  analyze    ../../../CoSim/src/OsvvmVprocGhdlPkg.vhd
-#} else {
-#  analyze    ../../../CoSim/src/OsvvmVprocPkg.vhd
-#}
-
 analyzeForeignProcs
-
-analyze    ../../../CoSim/src/OsvvmTestCoSimPkg.vhd
 
 library    osvvm_TbAxi4Lite
 analyze    OsvvmTestCommonPkg.vhd
 analyze    TestCtrl_e.vhd
 analyze    TbAxi4Memory.vhd
-analyze    TbAxi4_CoSim.vhd
-
-simulate   TbAxi4_CoSim [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_size  ]
+RunTest    TbAxi4_CoSim.vhd [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_size  ]
