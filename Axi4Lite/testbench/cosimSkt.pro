@@ -37,14 +37,15 @@
 #  limitations under the License.
 #
 
-source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
+source       $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
-library    osvvm_tbcosim
+library      osvvm_tbcosim
 analyzeForeignProcs
 
-library    osvvm_TbAxi4Lite
-analyze    OsvvmTestCommonPkg.vhd
-analyze    TestCtrl_e.vhd
-analyze    TbAxi4Memory.vhd
-RunTest    TbAxi4_CoSim.vhd [ mk_vproc_skt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket ]
+library      osvvm_TbAxi4Lite
+analyze      OsvvmTestCommonPkg.vhd
+analyze      TestCtrl_e.vhd
+analyze      TbAxi4Memory.vhd
+mk_vproc_skt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket
+RunTest      TbAxi4_CoSim.vhd
 

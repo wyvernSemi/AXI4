@@ -43,5 +43,6 @@ library    osvvm_tbcosim
 analyzeForeignProcs
 
 library    osvvm_TbAxi4
-RunTest    TbAxi4_CoSim.vhd  [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss rv32 ]
+mk_vproc   $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss rv32
+RunTest    TbAxi4_CoSim.vhd
 

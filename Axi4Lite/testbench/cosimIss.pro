@@ -46,5 +46,6 @@ library    osvvm_TbAxi4Lite
 analyze    OsvvmTestCommonPkg.vhd
 analyze    TestCtrl_e.vhd
 analyze    TbAxi4Memory.vhd
-RunTest    TbAxi4_CoSim.vhd [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss rv32 ]
+mk_vproc   $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss rv32
+RunTest    TbAxi4_CoSim.vhd
 

@@ -43,4 +43,5 @@ library    osvvm_tbcosim
 analyzeForeignProcs
 
 library    osvvm_TbAxi4
-RunTest   TbAxi4_CoSim.vhd [ mk_vproc $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_size ]
+mk_vproc   $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_size
+RunTest   TbAxi4_CoSim.vhd
