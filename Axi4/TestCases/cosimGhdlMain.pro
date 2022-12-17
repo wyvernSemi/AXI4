@@ -40,12 +40,12 @@
 source             $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library            osvvm_tbcosim
-analyzeForeignProcs
+AnalyzeForeignProcs
 
 library            osvvm_TbAxi4
 analyze            TbAxi4_CoSim.vhd
 
-mk_vproc_ghdl_main $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/ghdl_main
+MkVprocGhdlMain    $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/ghdl_main
 
 set ::osvvm::GhdlRunCmd "-r"
 simulate           TbAxi4_CoSim

@@ -40,8 +40,8 @@
 source     $::osvvm::CurrentWorkingDirectory/../../../CoSim/Scripts/MakeVproc.tcl
 
 library    osvvm_tbcosim
-analyzeForeignProcs
+AnalyzeForeignProcs
 
 library    osvvm_TbAxi4
-mk_vproc   $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_burst
+MkVproc    $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/usercode_burst
 RunTest    TbAxi4_CoSim.vhd
