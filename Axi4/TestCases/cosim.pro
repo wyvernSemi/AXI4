@@ -55,13 +55,14 @@ simulate   TbAxi4_CoSim
 MkVproc    $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/iss rv32
 simulate   TbAxi4_CoSim
 
-MkVprocSkt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket
-simulate   TbAxi4_CoSim
+#MkVprocSkt $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/socket
+#simulate   TbAxi4_CoSim
 
-if {$::osvvm::ToolName eq "GHDL"} {
-
-  MkVprocGhdlMain  $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/ghdl_main
-
-  set ::osvvm::GhdlRunCmd "-r"
-  simulate        TbAxi4_CoSim
-}
+#if {$::osvvm::ToolName eq "GHDL"} {
+#
+#  MkVprocGhdlMain  $::osvvm::CurrentWorkingDirectory/../../../CoSim tests/ghdl_main
+#
+#  set ::osvvm::GhdlRunCmd "-r"
+#  simulate        TbAxi4_CoSim
+#  unset ::osvvm::GhdlRunCmd
+#}
