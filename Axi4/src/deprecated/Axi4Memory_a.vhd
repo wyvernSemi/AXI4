@@ -298,6 +298,7 @@ begin
           Axi4Option := Axi4OptionsType'val(TransRec.Options) ;
           if IsAxiParameter(Axi4Option) then
             Set(Params, TransRec.Options, TransRec.IntToModel) ;
+            Alert("Interface Parameter not handled by SetAxi4Options", FAILURE) ;
 --            SetAxi4Parameter(Params, Axi4Option, TransRec.IntToModel) ;
           else
             case Axi4Option is
@@ -322,6 +323,7 @@ begin
           Axi4Option := Axi4OptionsType'val(TransRec.Options) ;
           if IsAxiParameter(Axi4Option) then
             TransRec.IntFromModel <= Get(Params, TransRec.Options) ;
+            Alert("Interface Parameter not handled by GetAxi4Options", FAILURE) ;
 --            GetAxi4Parameter(Params, Axi4Option, Axi4OptionVal) ;
 --            TransRec.IntFromModel <= Axi4OptionVal ;
           else

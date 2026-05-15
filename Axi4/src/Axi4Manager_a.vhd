@@ -484,6 +484,7 @@ begin
             SetAxi4InterfaceDefault(AxiDefaults, Axi4Option, TransRec.IntToModel) ;
           else
             Set(Params, TransRec.Options, TransRec.IntToModel) ;
+            Alert("Interface Parameter not handled by SetAxi4Options", FAILURE) ;
           end if ;
 
         when GET_MODEL_OPTIONS =>
@@ -492,6 +493,7 @@ begin
             TransRec.IntFromModel <= GetAxi4InterfaceDefault(AxiDefaults, Axi4Option) ;
           else
             TransRec.IntFromModel <= Get(Params, TransRec.Options) ;
+            Alert("Interface Parameter not handled by GetAxi4Options", FAILURE) ;
           end if ;
 
         -- The End -- Done

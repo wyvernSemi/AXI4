@@ -53,7 +53,11 @@ if {$::osvvm::VhdlVersion >= 2019 && $::osvvm::Supports2019Interface}  {
 }
 
 # build context 
-analyze Axi4Context.vhd
+if {$::osvvm::ToolName ne "XSIM"} {
+  analyze Axi4Context.vhd
+} else {
+  analyze deprecated/Axi4Context.vhd
+}
 
 # Create derivative architectures for verification components if architecture is updated
 if {$::osvvm::OsvvmDevDeriveArchitectures} {

@@ -42,7 +42,11 @@
 library osvvm_axi4
 ChangeWorkingDirectory ./src
 analyze Axi4InterfaceCommonPkg.vhd
-analyze Axi4CommonPkg.vhd
+if {$::osvvm::ToolName ne "XSIM"} {
+  analyze Axi4CommonPkg.vhd
+} else {
+  analyze deprecated/Axi4CommonPkg_xilinx.vhd
+}
 analyze Axi4ModelPkg.vhd
 if {$::osvvm::VhdlVersion >= 2019 && $::osvvm::Supports2019Interface}  {
   analyze Axi4OptionsPkg.vhd

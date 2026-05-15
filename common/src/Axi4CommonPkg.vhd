@@ -67,7 +67,8 @@ package Axi4CommonPkg is
   ------------------------------------------------------------
     signal   Clk                    : in    std_logic ; 
     signal   Valid                  : in    std_logic ; 
-    signal   Ready                  : inout std_logic ; 
+--    signal   Ready                  : inout std_logic ; 
+    signal   Ready                  : out   std_logic ; 
     constant ReadyBeforeValid       : in    boolean ; 
     constant ReadyDelayCycles       : in    natural ; 
     constant tpd_Clk_Ready          : in    time ;
@@ -137,7 +138,8 @@ package body Axi4CommonPkg is
   ------------------------------------------------------------
     signal   Clk                    : in    std_logic ; 
     signal   Valid                  : in    std_logic ; 
-    signal   Ready                  : inout std_logic ; 
+--    signal   Ready                  : inout std_logic ; 
+    signal   Ready                  : out   std_logic ; 
     constant ReadyBeforeValid       : in    boolean ; 
     constant ReadyDelayCycles       : in    natural ; 
     constant tpd_Clk_Ready          : in    time ;
@@ -146,7 +148,7 @@ package body Axi4CommonPkg is
     constant TimeOutPeriod          : in    time := - 1 sec 
   ) is
   begin 
-    
+  
     if ReadyBeforeValid then
       WaitForClock(Clk, ReadyDelayCycles) ; 
       Ready <= transport '1' after tpd_Clk_Ready ;
@@ -160,24 +162,35 @@ package body Axi4CommonPkg is
     end if ;
     
     if Valid = '1' then 
-      -- Proper handling
+      -- Valid asserted at clock edge
       if not ReadyBeforeValid then 
         WaitForClock(Clk, ReadyDelayCycles) ; 
         Ready <= '1' after tpd_Clk_Ready ;
-      end if ; 
-      
-      -- If ready not signaled yet, find ready at a rising edge of clk
-      if Ready /= '1' then
-        wait on Clk until Clk = '1' and (Ready = '1' or Valid /= '1') ;
-        AlertIf(
+        wait on Clk until Clk = '1' ;
+        -- Did Valid remain asserted until Ready asserted?  
+        if Valid /= '1' then 
+          Alert(
           AlertLogID, 
-          Valid /= '1', 
           TimeOutMessage & 
           " Valid (" & to_string(Valid) & ") " & 
-          "deasserted before Ready asserted (" & to_string(Ready) & ") ",
+          "deasserted before Ready asserted",
           FAILURE
-        ) ;
+          ) ;
+        end if ;
       end if ; 
+      
+--      -- If ready not signaled yet, find ready at a rising edge of clk
+--      if Ready /= '1' then
+--        wait on Clk until Clk = '1' and (Ready = '1' or Valid /= '1') ;
+--        AlertIf(
+--          AlertLogID, 
+--          Valid /= '1', 
+--          TimeOutMessage & 
+--          " Valid (" & to_string(Valid) & ") " & 
+--          "deasserted before Ready asserted (" & to_string(Ready) & ") ",
+--          FAILURE
+--        ) ;
+--      end if ; 
     else 
       -- TimeOut handling
       Alert(
