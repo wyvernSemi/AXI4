@@ -169,13 +169,13 @@ package body Axi4CommonPkg is
       if not ReadyBeforeValid then 
 --!! xilinx        WaitForClock(Clk, ReadyDelayCycles) ; 
         -- for i in 1 to ReadyDelayCycles loop 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
-          wait until rising_edge(Clk) ; 
+          wait until rising_edge(Clk) ;  wait for 0 ns ; 
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
+          wait until rising_edge(Clk) ;  wait for 0 ns ;  
         -- end loop ;
         Ready <= '1' after tpd_Clk_Ready ;
         wait until rising_edge(Clk) ; 
