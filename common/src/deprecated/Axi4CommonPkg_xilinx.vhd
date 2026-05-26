@@ -110,14 +110,24 @@ package body Axi4CommonPkg is
     constant TimeOutMessage         : in    string := "" ; 
     constant TimeOutPeriod          : in    time := - 1 sec 
   ) is
+    variable StopAtTime : time ;
   begin 
     
     Valid <= '1' after tpd_Clk_Valid ;
     
     if TimeOutPeriod > 0 sec then 
-      wait on Clk until Clk = '1' and Ready = '1' for TimeOutPeriod ;
+      StopAtTime := now + TimeOutPeriod ;
+--      wait on Clk until Clk = '1' and Ready = '1' for TimeOutPeriod ;
+      loop
+        wait until rising_edge(Clk) ;  wait for 0 ns ;
+        exit when Ready = '1' or now >= StopAtTime ;
+      end loop ;  
     else
-      wait on Clk until Clk = '1' and Ready = '1' ;
+--      wait on Clk until rising_edge(Clk) and Ready = '1' ;
+      loop
+        wait until rising_edge(Clk) ;  wait for 0 ns ;
+        exit when Ready = '1' ;
+      end loop ;  
     end if ;
     
     Valid <= '0' after tpd_Clk_Valid ;
@@ -147,36 +157,34 @@ package body Axi4CommonPkg is
     constant TimeOutMessage         : in    string := "" ; 
     constant TimeOutPeriod          : in    time := - 1 sec 
   ) is
+      variable StopAtTime : time ;
   begin 
   
     if ReadyBeforeValid then
---!! xilinx      WaitForClock(Clk, ReadyDelayCycles) ; 
-      for i in 1 to ReadyDelayCycles loop 
-        wait until rising_edge(Clk) ; 
-      end loop ;
+      WaitForClock(Clk, ReadyDelayCycles) ; 
       Ready <= transport '1' after tpd_Clk_Ready ;
     end if ;  
     
     -- Wait to Receive Transaction
     if TimeOutPeriod > 0 sec then 
-      wait on Clk until Clk = '1' and Valid = '1' for TimeOutPeriod ;
+      StopAtTime := now + TimeOutPeriod ;
+--      wait on Clk until Clk = '1' and Valid = '1' for TimeOutPeriod ;
+      loop
+        wait until rising_edge(Clk) ;  wait for 0 ns ;
+        exit when Valid = '1' or now >= StopAtTime ;
+      end loop ;  
     else
-      wait on Clk until Clk = '1' and Valid = '1' ;
+--      wait on Clk until rising_edge(Clk) and Valid = '1' ;
+      loop
+        wait until rising_edge(Clk) ;  wait for 0 ns ;
+        exit when Valid = '1' ;
+      end loop ;  
     end if ;
     
     if Valid = '1' then 
       -- Valid asserted at clock edge
       if not ReadyBeforeValid then 
---!! xilinx        WaitForClock(Clk, ReadyDelayCycles) ; 
-        -- for i in 1 to ReadyDelayCycles loop 
-          wait until rising_edge(Clk) ;  wait for 0 ns ; 
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-          wait until rising_edge(Clk) ;  wait for 0 ns ;  
-        -- end loop ;
+        WaitForClock(Clk, ReadyDelayCycles) ; 
         Ready <= '1' after tpd_Clk_Ready ;
         wait until rising_edge(Clk) ; 
         -- Did Valid remain asserted until Ready asserted?  
