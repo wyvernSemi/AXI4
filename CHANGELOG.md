@@ -2,6 +2,8 @@
 
 | Revision  |  Release Summary 
 ------------|----------- 
+| 2026.05   |  Axi4Memory updated to match memory width
+|           |  Axi4CommonPkg updates for Xilinx.      
 | 2026.01   |  Added DoDirectiveTransactions to all AXI/AxiStream VC.  Added VHDL-2019 interface support to Axi4Full.   
 | 2025.06   |  build.pro replaced <DirectoryName>.pro.  Autogenerate OsvvmTestCommonPkg.  Update testbenches for TranscriptOpen and AffirmIfTranscriptsMatch
 | 2025.04   |  Updated test cases using delay coverage delays  
@@ -35,6 +37,12 @@
 | 2020.07   |  Major:  Axi4Lite, Axi4(Full) w/ Bursting, AddressBusTransactionPkg, Responder
 | 2020.02   |  Initial version of AddressBusTransactionPkg.
 | 2018.04   |  Initial public release
+
+
+## 2026.05  May 2026
+Updated Axi4Memory to match integer width.
+Updated Axi4CommonPkg and Axi4CommonPkg_xilinx to address xilinx issues.
+Updates to remove Sigasi issues.
 
 ## 2026.01  January 2026
 Added DoDirectiveTransactions to all AXI/AxiStream VC 
