@@ -157,6 +157,8 @@ begin
     variable ValidDelayCycleOption : Axi4OptionsType ; 
     variable IntOption  : integer ; 
   begin
+    WaitForClock(SubordinateRec, 1) ; 
+
     -- Check Defaults
     GetAxi4Options(SubordinateRec, WRITE_RESPONSE_VALID_DELAY_CYCLES, IntOption) ;
     AffirmIfEqual(TbSubordinateID, IntOption, 0, "WRITE_RESPONSE_VALID_DELAY_CYCLES") ;

@@ -474,7 +474,11 @@ package body Axi4OptionsPkg is
     constant OptVal         : In    boolean
   ) is
   begin
-    SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), boolean'pos(OptVal)) ;
+    if IsAxiParameter(Option) then
+      Set(TransactionRec.Params, Axi4OptionsType'POS(Option), OptVal) ;
+    else
+      SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), boolean'pos(OptVal)) ;
+    end if ;
   end procedure SetAxi4Options ;
 
   ------------------------------------------------------------
@@ -485,7 +489,12 @@ package body Axi4OptionsPkg is
     constant OptVal         : In    std_logic
   ) is
   begin
-    SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), std_logic'pos(OptVal)) ;
+    if IsAxiParameter(Option) then
+-- update when params supports std_ulogic
+      Set(TransactionRec.Params, Axi4OptionsType'POS(Option), std_ulogic'pos(OptVal)) ;
+    else
+      SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), std_ulogic'pos(OptVal)) ;
+    end if ;
   end procedure SetAxi4Options ;
 
   ------------------------------------------------------------
@@ -496,7 +505,11 @@ package body Axi4OptionsPkg is
     constant OptVal         : In    integer
   ) is
   begin
-    SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    if IsAxiParameter(Option) then
+      Set(TransactionRec.Params, Axi4OptionsType'POS(Option), OptVal) ;
+    else
+      SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    end if ;
   end procedure SetAxi4Options ;
 
   ------------------------------------------------------------
@@ -507,7 +520,11 @@ package body Axi4OptionsPkg is
     constant OptVal         : In    std_logic_vector
   ) is
   begin
-    SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    if IsAxiParameter(Option) then
+      Set(TransactionRec.Params, Axi4OptionsType'POS(Option), OptVal) ;
+    else
+      SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    end if ;
   end procedure SetAxi4Options ;
 
   ------------------------------------------------------------
@@ -518,6 +535,7 @@ package body Axi4OptionsPkg is
     constant OptVal         : In    Axi4RespEnumType
   ) is
   begin
+    -- RESP is always an interface operation
     SetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), Axi4RespEnumType'pos(OptVal)) ;
   end procedure SetAxi4Options ;
 
@@ -530,8 +548,12 @@ package body Axi4OptionsPkg is
   ) is
     variable IntOptVal : integer ;
   begin
-    GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), IntOptVal) ;
-    OptVal := IntOptVal >= 1 ;
+    if IsAxiParameter(Option) then
+      OptVal := Get(TransactionRec.Params, Axi4OptionsType'POS(Option)) ;
+    else
+      GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), IntOptVal) ;
+      OptVal := IntOptVal >= 1 ;
+    end if ;
   end procedure GetAxi4Options ;
 
   ------------------------------------------------------------
@@ -543,7 +565,12 @@ package body Axi4OptionsPkg is
   ) is
     variable IntOptVal : integer ;
   begin
-    GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), IntOptVal) ;
+    if IsAxiParameter(Option) then
+-- update when params supports std_ulogic
+      IntOptVal := Get(TransactionRec.Params, Axi4OptionsType'POS(Option)) ;
+    else
+      GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), IntOptVal) ;
+    end if ;
     OptVal := std_logic'val(IntOptVal) ;
   end procedure GetAxi4Options ;
 
@@ -555,7 +582,11 @@ package body Axi4OptionsPkg is
     variable OptVal         : Out   integer
   ) is
   begin
-    GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    if IsAxiParameter(Option) then
+      OptVal := Get(TransactionRec.Params, Axi4OptionsType'POS(Option)) ;
+    else
+      GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    end if ;
   end procedure GetAxi4Options ;
 
   ------------------------------------------------------------
@@ -566,7 +597,11 @@ package body Axi4OptionsPkg is
     variable OptVal         : Out   std_logic_vector
   ) is
   begin
-    GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    if IsAxiParameter(Option) then
+      OptVal := Get(TransactionRec.Params, Axi4OptionsType'POS(Option)) ;
+    else
+      GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), OptVal) ;
+    end if ;
   end procedure GetAxi4Options ;
 
   ------------------------------------------------------------
@@ -578,6 +613,7 @@ package body Axi4OptionsPkg is
   ) is
     variable IntOptVal : integer ;
   begin
+    -- RESP is always an interface operation
     GetModelOptions(TransactionRec, Axi4OptionsType'POS(Option), IntOptVal) ;
     OptVal := Axi4RespEnumType'val(IntOptVal) ;
   end procedure GetAxi4Options ;

@@ -42,7 +42,13 @@
 library osvvm_axi4
 ChangeWorkingDirectory ./src
 analyze Axi4InterfaceCommonPkg.vhd
-analyze Axi4CommonPkg.vhd
+if {$::osvvm::ToolName ne "XSIM"} {
+  analyze Axi4CommonPkg.vhd
+} else {
+  analyze deprecated/Axi4CommonPkg_xilinx.vhd
+  # Testing work around in TbUtilPkg for Xilinx bug finding consecutive clock edges. If that works, then we can remove the deprecated version of Axi4CommonPkg and analyze the current version for Xilinx as well.
+  # analyze Axi4CommonPkg.vhd
+}
 analyze Axi4ModelPkg.vhd
 if {$::osvvm::VhdlVersion >= 2019 && $::osvvm::Supports2019Interface}  {
   analyze Axi4OptionsPkg.vhd
