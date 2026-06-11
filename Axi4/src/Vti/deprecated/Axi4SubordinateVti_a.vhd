@@ -93,7 +93,19 @@ architecture Transactor of Axi4SubordinateVti is
   signal ReadDataRequestCount        : integer := 0 ;
   signal ReadDataDoneCount           : integer := 0 ;
 
-  -- A hack of a way to set the parameters for now.
+  -- Settings and Status values from interface
+  -- signal SettingsAxiBus : AxiBus'subtype ;
+  -- alias SettingsAW : AxiBus.WriteAddress'subtype is SettingsAxiBus.WriteAddress ;
+  -- alias SettingsWD : AxiBus.WriteData'subtype is SettingsAxiBus.WriteAddress ;
+  -- alias SettingsWR : AxiBus.WriteResponse'subtype is SettingsAxiBus.WriteAddress ;
+  -- alias SettingsAR : AxiBus.ReadAddress'subtype is SettingsAxiBus.WriteAddress ;
+  -- alias SettingsRD : AxiBus.ReadData'subtype is SettingsAxiBus.WriteAddress ;
+  signal SettingsAW : AxiBus.WriteAddress'subtype ;
+  signal SettingsWD : AxiBus.WriteData'subtype ;
+  signal SettingsWR : AxiBus.WriteResponse'subtype ;
+  signal SettingsAR : AxiBus.ReadAddress'subtype ;
+  signal SettingsRD : AxiBus.ReadData'subtype ;
+
   signal ModelBResp  : Axi4RespType := to_Axi4RespType(OKAY) ;
   signal ModelRResp  : Axi4RespType := to_Axi4RespType(OKAY) ;
   
@@ -154,6 +166,7 @@ begin
     -- Formulate local copies of values for AXI Interface
     variable LocalAW : AxiBus.WriteAddress'subtype ;
     variable LocalWD : AxiBus.WriteData'subtype ;
+    variable WriteData : LocalWD.Data'subtype ;
 --    variable LocalWR : AxiBus.WriteResponse'subtype ;
     variable LocalAR : AxiBus.ReadAddress'subtype ;
     variable LocalRD : AxiBus.ReadData'subtype ;
@@ -212,9 +225,19 @@ begin
             if IsEmpty(WriteAddressFifo) then
               WaitForToggle(WriteAddressReceiveCount) ;
             end if ;
+            (LocalAW.Addr, LocalAW.Prot, LocalAW.ID, LocalAW.Len, LocalAW.Size, LocalAW.Burst, LocalAW.Lock, LocalAW.Cache, LocalAW.QOS, LocalAW.Region, LocalAW.User) := pop(WriteAddressFifo) ;
+            TransRec.Address   <= SafeResize(ModelID, LocalAW.Addr, TransRec.Address'length) ;
+--!!nn            AWSettings.Prot    <= LocalAW.Prot ; 
+--!!nn            AWSettings.ID      <= LocalAW.ID ; 
+--!!nn            AWSettings.Len     <= LocalAW.Len ; 
+--!!nn            AWSettings.Size    <= LocalAW.Size ; 
+--!!nn            AWSettings.Burst   <= LocalAW.Burst ; 
+--!!nn            AWSettings.Lock    <= LocalAW.Lock ; 
+--!!nn            AWSettings.Cache   <= LocalAW.Cache ; 
+--!!nn            AWSettings.QOS     <= LocalAW.QOS ; 
+--!!nn            AWSettings.Region  <= LocalAW.Region ; 
+--!!nn            AWSettings.User    <= LocalAW.User ;
 
-            (LocalAW.Addr, LocalAW.Prot) := pop(WriteAddressFifo) ;
-            TransRec.Address       <= SafeResize(ModelID, LocalAW.Addr, TransRec.Address'length) ;
             WriteAddressTransactionCount := Increment(WriteAddressTransactionCount) ; 
 
   --!! Address checks intentionally removed - only want an error if the value changes.  
@@ -231,6 +254,7 @@ begin
             end if ;
 
             (LocalWD.Data, LocalWD.Strb, LocalWD.Last, LocalWD.User, LocalWD.ID) := pop(WriteDataFifo) ;
+            WriteData := LocalWD.Data ; 
 
             if IsWriteAddress(TransRec.Operation) then
               WriteByteAddr := CalculateByteAddress(LocalAW.Addr, AXI_BYTE_ADDR_WIDTH) ;
@@ -248,12 +272,12 @@ begin
 --            GetAxi4Parameter(Params, WRITE_DATA_FILTER_UNDRIVEN, FilterUndrivenWriteData) ;
 --            GetAxi4Parameter(Params, WRITE_DATA_UNDRIVEN_VALUE,  UndrivenWriteDataValue) ;
             if FilterUndrivenWriteData then
-              FilterUndrivenData(LocalWD.Data, LocalWD.Strb, UndrivenWriteDataValue) ;
+              FilterUndrivenData(WriteData, LocalWD.Strb, UndrivenWriteDataValue) ;
             end if ;
 
             
-            LocalWD.Data := AlignDataBusToBytes(LocalWD.Data, TransRec.DataWidth, WriteByteAddr) ;
-            TransRec.DataFromModel  <= SafeResize(ModelID, LocalWD.Data, TransRec.DataFromModel'length) ;
+            WriteData := AlignDataBusToBytes(WriteData, TransRec.DataWidth, WriteByteAddr) ;
+            TransRec.DataFromModel  <= SafeResize(ModelID, WriteData, TransRec.DataFromModel'length) ;
             
             if LocalWD.Last = '1' then
               WriteDataTransactionCount := Increment(WriteDataTransactionCount) ; 
@@ -309,11 +333,20 @@ begin
             if IsEmpty(ReadAddressFifo) then
               WaitForToggle(ReadAddressReceiveCount) ;
             end if ;
-            (LocalAR.Addr, LocalAR.Prot)  := pop(ReadAddressFifo) ;
+--            (LocalAR.Addr, LocalAR.Prot)  := pop(ReadAddressFifo) ;
+            (LocalAR.Addr, LocalAR.Prot, LocalAR.ID, LocalAR.Len, LocalAR.Size, LocalAR.Burst, LocalAR.Lock, LocalAR.Cache, LocalAR.QOS, LocalAR.Region, LocalAR.User) := pop(ReadAddressFifo) ;
             TransRec.Address         <= SafeResize(ModelID, LocalAR.Addr, TransRec.Address'length) ;
   --         AlertIf(ModelID, TransRec.AddrWidth /= AXI_ADDR_WIDTH, "Slave Read, Address length does not match", FAILURE) ;
-  --!TODO Add Check here for actual PROT vs expected (ModelRProt)
-  --        TransRec.Prot           <= to_integer(LocalAR.Prot) ;
+--!!nn            ARSettings.Prot    <= LocalAR.Prot ; 
+--!!nn            ARSettings.ID      <= LocalAR.ID ; 
+--!!nn            ARSettings.Len     <= LocalAR.Len ; 
+--!!nn            ARSettings.Size    <= LocalAR.Size ; 
+--!!nn            ARSettings.Burst   <= LocalAR.Burst ; 
+--!!nn            ARSettings.Lock    <= LocalAR.Lock ; 
+--!!nn            ARSettings.Cache   <= LocalAR.Cache ; 
+--!!nn            ARSettings.QOS     <= LocalAR.QOS ; 
+--!!nn            ARSettings.Region  <= LocalAR.Region ; 
+--!!nn            ARSettings.User    <= LocalAR.User ;
           end if ;
 
           if ReadAvailable and IsReadData(TransRec.Operation) then
@@ -344,15 +377,15 @@ begin
             Alert("Interface Parameter not handled by SetAxi4Options", FAILURE) ;
           else
             case Axi4Option is
-              -- RESP Settings
-              when BRESP =>                ModelBResp <= to_slv(TransRec.IntToModel, ModelBResp'length) ;
-              when RRESP =>                ModelRResp <= to_slv(TransRec.IntToModel, ModelRResp'length) ;
-              -- ID Settings
-              when BID =>                  ModelBID <= to_slv(TransRec.IntToModel, ModelBID'length) ;
-              when RID =>                  ModelRID <= to_slv(TransRec.IntToModel, ModelRID'length) ;
-              -- User Settings
-              when BUSER =>                ModelBUser <= to_slv(TransRec.IntToModel, ModelBUser'length) ;
-              when RUSER =>                ModelRUser <= to_slv(TransRec.IntToModel, ModelRUser'length) ;
+              -- Write Response Settings
+              when BRESP =>                ModelBResp  <= to_slv(TransRec.IntToModel, ModelBResp'length) ;
+              when BID =>                  ModelBID    <= to_slv(TransRec.IntToModel, ModelBID'length) ;
+              when BUSER =>                ModelBUser  <= to_slv(TransRec.IntToModel, ModelBUser'length) ;
+
+              -- Read Data and Response Settings
+              when RRESP =>                ModelRResp  <= to_slv(TransRec.IntToModel, ModelRResp'length) ;
+              when RID =>                  ModelRID    <= to_slv(TransRec.IntToModel, ModelRID'length) ;
+              when RUSER =>                ModelRUser  <= to_slv(TransRec.IntToModel, ModelRUser'length) ;
               --
               -- The End -- Done
               when others =>              
@@ -369,15 +402,47 @@ begin
 --            TransRec.IntFromModel <= Axi4OptionVal ;
           else
             case Axi4Option is
-              -- RESP Settings
+              -- Address Write Status
+              when AWPROT    =>            TransRec.IntFromModel <= to_integer(LocalAW.Prot  ) ;
+              when AWID      =>            TransRec.IntFromModel <= to_integer(LocalAW.ID    ) ;
+              when AWLEN     =>            TransRec.IntFromModel <= to_integer(LocalAW.Len   ) ;
+              when AWSIZE    =>            TransRec.IntFromModel <= to_integer(LocalAW.Size  ) ;
+              when AWBURST   =>            TransRec.IntFromModel <= to_integer(LocalAW.Burst ) ;
+              when AWLOCK    =>            TransRec.IntFromModel <= 1 when LocalAW.Lock else 0 ;
+              when AWCACHE   =>            TransRec.IntFromModel <= to_integer(LocalAW.Cache ) ;
+              when AWQOS     =>            TransRec.IntFromModel <= to_integer(LocalAW.QOS   ) ;
+              when AWREGION  =>            TransRec.IntFromModel <= to_integer(LocalAW.Region) ;
+              when AWUSER    =>            TransRec.IntFromModel <= to_integer(LocalAW.User  ) ;
+
+              -- Write Data Status
+              when WDATA =>                TransRec.DataFromModel <= SafeResize(ModelID, LocalWD.Data, TransRec.DataFromModel'length) ;
+              when WSTRB =>                TransRec.IntFromModel <= to_integer(LocalWD.Strb  ) ;
+              when WLAST =>                TransRec.IntFromModel <= 1 when LocalWD.Last else 0 ;
+              when WUSER =>                TransRec.IntFromModel <= to_integer(LocalWD.User  ) ;
+              when WID =>                  TransRec.IntFromModel <= to_integer(LocalWD.ID  ) ; 
+              
+              -- Write Response Settings
               when BRESP =>                TransRec.IntFromModel <= to_integer(ModelBResp) ;
-              when RRESP =>                TransRec.IntFromModel <= to_integer(ModelRResp) ;
-              -- ID Settings
               when BID =>                  TransRec.IntFromModel <= to_integer(ModelBID) ;
-              when RID =>                  TransRec.IntFromModel <= to_integer(ModelRID) ;
-              -- User Settings
               when BUSER =>                TransRec.IntFromModel <= to_integer(ModelBUser) ;
+
+              -- Address Read Status
+              when ARPROT    =>            TransRec.IntFromModel <= to_integer(LocalAR.Prot  ) ;
+              when ARID      =>            TransRec.IntFromModel <= to_integer(LocalAR.ID    ) ;
+              when ARLEN     =>            TransRec.IntFromModel <= to_integer(LocalAR.Len   ) ;
+              when ARSIZE    =>            TransRec.IntFromModel <= to_integer(LocalAR.Size  ) ;
+              when ARBURST   =>            TransRec.IntFromModel <= to_integer(LocalAR.Burst ) ;
+              when ARLOCK    =>            TransRec.IntFromModel <= 1 when LocalAR.Lock else 0 ;
+              when ARCACHE   =>            TransRec.IntFromModel <= to_integer(LocalAR.Cache ) ;
+              when ARQOS     =>            TransRec.IntFromModel <= to_integer(LocalAR.QOS   ) ;
+              when ARREGION  =>            TransRec.IntFromModel <= to_integer(LocalAR.Region) ;
+              when ARUSER    =>            TransRec.IntFromModel <= to_integer(LocalAR.User  ) ;
+
+              -- Read Response Settings
+              when RRESP =>                TransRec.IntFromModel <= to_integer(ModelRResp) ;
+              when RID =>                  TransRec.IntFromModel <= to_integer(ModelRID) ;
               when RUSER =>                TransRec.IntFromModel <= to_integer(ModelRUser) ;
+
               --
               -- The End -- Done
               when others =>              
@@ -493,7 +558,7 @@ begin
       ) ;
 
       -- capture address, prot
-      push(WriteAddressFifo, AW.Addr & AW.Prot) ;
+      push(WriteAddressFifo, AW.Addr & AW.Prot & AW.ID & AW.Len & AW.Size & AW.Burst & AW.Lock & AW.Cache & AW.QOS & AW.Region & AW.User) ;
 
       -- Log this operation
       Log(ModelID,
@@ -612,6 +677,7 @@ begin
       if not IsEmpty(WriteResponseFifo) then
         Local.Resp := pop(WriteResponseFifo) ;
       else
+--!! branch never happens.  If WriteReceiveCount incremented, FIFO has Data
         Local.Resp := AXI4_RESP_OKAY ;
       end if ;
       
@@ -711,7 +777,7 @@ begin
       ) ;
 
       -- capture address, prot
-      push(ReadAddressFifo, AR.Addr & AR.Prot) ;
+      push(ReadAddressFifo, AR.Addr & AR.Prot & AR.ID & AR.Len & AR.Size & AR.Burst & AR.Lock & AR.Cache & AR.QOS & AR.Region & AR.User) ;
       push(ReadAddressTransactionFifo, AR.Addr) ;
       increment(ReadAddressReceiveCount) ;
       wait for 0 ns ;

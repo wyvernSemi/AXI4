@@ -108,7 +108,7 @@ package Axi4OptionsPkg is
 --    AWREADY,
     -- Axi4 Full
     AWID,
---    AWLEN,
+    AWLEN,
     AWSIZE,
     AWBURST,
     AWLOCK,
@@ -118,8 +118,8 @@ package Axi4OptionsPkg is
     AWUSER,
 
     -- Write Data
---    WDATA,
---    WSTRB,
+    WDATA,
+    WSTRB,
 --    WVALID,
 --    WREADY,
     -- AXI4 Full
@@ -144,7 +144,7 @@ package Axi4OptionsPkg is
     -- Axi4 Full
     ARID,
     -- BURSTLength = AxLen+1.  AXI4,
---    ARLEN,
+    ARLEN,
     -- #Bytes in transfer = 2**AxSize
     ARSIZE,
     -- AxBURST = (Fixed, Incr, Wrap, NotDefined)
