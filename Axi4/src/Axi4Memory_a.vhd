@@ -123,6 +123,11 @@ architecture VerificationComponent of Axi4Memory is
   signal TransactionDone, WriteTransactionDone, ReadTransactionDone : boolean := FALSE ; 
   signal BurstFifoMode      : AddressBusFifoBurstModeType := ADDRESS_BUS_BURST_WORD_MODE ;
 
+  constant AXI_AWID_WIDTH      : integer := AxiBus.WriteAddress.ID'length ; 
+  constant AXI_BID_WIDTH       : integer := AxiBus.WriteResponse.ID'length ; 
+  constant AXI_ARID_WIDTH      : integer := AxiBus.ReadAddress.ID'length ; 
+  constant AXI_RID_WIDTH       : integer := AxiBus.ReadData.ID'length ; 
+
 begin
 
   ------------------------------------------------------------
@@ -130,6 +135,8 @@ begin
   ------------------------------------------------------------
   --%%UncommentFor2008 InitAxi4Rec (AxiBusRec => AxiBus) ;
 
+  AffirmIfEqual(AXI_AWID_WIDTH, AXI_BID_WIDTH, "AXI Address Write and Response ID must match") ;
+  AffirmIfEqual(AXI_ARID_WIDTH, AXI_RID_WIDTH, "AXI Address Read and Response ID must match") ;
 
   ------------------------------------------------------------
   --  Initialize AlertLogIDs

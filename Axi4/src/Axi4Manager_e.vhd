@@ -118,7 +118,7 @@ port (
   -- Derive AXI interface properties from the AxiBus
   constant AXI_ADDR_WIDTH      : integer := AxiBus.WriteAddress.Addr'length ;
   constant AXI_DATA_WIDTH      : integer := AxiBus.WriteData.Data'length ;
-  
+
   constant MODEL_NAME : string := "Axi4Manager" ;
   
 end entity Axi4Manager ;
