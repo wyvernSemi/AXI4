@@ -89,7 +89,9 @@ architecture VerificationComponent of Axi4Manager is
   signal ReadDataFifo                : osvvm.ScoreboardPkg_slv.ScoreboardIDType ;
 
   signal WriteResponseScoreboard     : osvvm.ScoreboardPkg_slv.ScoreboardIDType ;
+  signal WriteIDScoreboard           : osvvm.ScoreboardPkg_slv.ScoreboardIDType ;
   signal ReadResponseScoreboard      : osvvm.ScoreboardPkg_slv.ScoreboardIDType ;
+  signal ReadIDScoreboard            : osvvm.ScoreboardPkg_slv.ScoreboardIDType ;
 
   signal WriteAddressRequestCount, WriteAddressDoneCount      : integer := 0 ;
   signal WriteDataRequestCount,    WriteDataDoneCount         : integer := 0 ;
@@ -131,7 +133,9 @@ begin
     Params                  <= vParams ; 
 
     WriteResponseScoreboard <= NewID("WriteResp SB", ID, Search => PRIVATE_NAME);
+    WriteIDScoreboard       <= NewID("Write ID SB",  ID, Search => PRIVATE_NAME);
     ReadResponseScoreboard  <= NewID("ReadResp SB",  ID, Search => PRIVATE_NAME);
+    ReadIDScoreboard        <= NewID("Read ID SB",   ID, Search => PRIVATE_NAME);
 
     -- FIFOs get an AlertLogID with NewID, however, it does not print in ReportAlerts (due to DoNotReport)
     --   FIFOS only generate usage type errors 
@@ -219,6 +223,7 @@ begin
 
             -- Initiate Write Address
             Push(WriteAddressFifo, LAW.Addr  & LAW.Len & LAW.Prot & LAW.ID & LAW.Size & LAW.Burst & LAW.Lock & LAW.Cache & LAW.QOS & LAW.Region & LAW.User) ;
+            Push(WriteIDScoreboard, LAW.ID) ;
             Increment(WriteAddressRequestCount) ;
           end if ;
 
@@ -283,8 +288,8 @@ begin
             end if ;
             
             -- Initiate Write Address
-            Push(WriteAddressFifo, LAW.Addr  & LAW.Len & LAW.Prot & LAW.ID & LAW.Size & LAW.Burst & LAW.Lock & LAW.Cache & LAW.QOS & LAW.Region & LAW.User) ;
-
+            Push(WriteAddressFifo, LAW.Addr & LAW.Len & LAW.Prot & LAW.ID & LAW.Size & LAW.Burst & LAW.Lock & LAW.Cache & LAW.QOS & LAW.Region & LAW.User) ;
+            Push(WriteIDScoreboard, LAW.ID) ;
             Increment(WriteAddressRequestCount) ;
           end if ;
 
@@ -355,6 +360,7 @@ begin
 
             -- Expect a Read Data Cycle
             Push(ReadResponseScoreboard, LRD.Resp) ;
+            Push(ReadIDScoreboard,       LAR.ID) ;
             increment(ReadDataExpectCount) ;
           end if ;
           wait for 0 ns ; 
@@ -432,6 +438,7 @@ begin
             -- Expect a Read Data Cycle
             for i in 1 to TransfersInBurst loop
               Push(ReadResponseScoreboard, LRD.Resp) ;
+              Push(ReadIDScoreboard,       LAR.ID) ;
             end loop ;
   -- Should this be + TransfersInBurst ; ???
             ReadDataExpectCount <= Increment(ReadDataExpectCount, TransfersInBurst) ;
@@ -734,6 +741,7 @@ begin
     variable ReadyBeforeValid  : boolean ;
     variable ReadyDelayCycles  : integer ;
     variable ValidTimeOut : integer ;
+    variable WriteID : AxiBus.WriteResponse.ID'subtype ; 
   begin
     -- initialize
     AxiBus.WriteResponse.Ready <= '0' ;
@@ -772,7 +780,6 @@ begin
         Valid                   => AxiBus.WriteResponse.Valid,
         Ready                   => AxiBus.WriteResponse.Ready,
         ReadyBeforeValid        => ReadyBeforeValid,
---        ReadyDelayCycles        => ReadyDelayCycles * tperiod_Clk,
         ReadyDelayCycles        => ReadyDelayCycles,
         tpd_Clk_Ready           => tpd_Clk_BReady,
         AlertLogID              => BusFailedID,
@@ -781,7 +788,12 @@ begin
       ) ;
 
       -- Check Write Response
-      Check(WriteResponseScoreboard, AxiBus.WriteResponse.Resp) ;
+      Check(WriteResponseScoreboard,  AxiBus.WriteResponse.Resp) ;
+      if (Get(Params, to_integer(CHECK_ID))) then
+        Check(WriteIDScoreboard, AxiBus.WriteResponse.ID) ;
+      else
+        WriteID := pop(WriteIDScoreboard) ;
+      end if ; 
 
       -- Signal Completion
       increment(WriteResponseReceiveCount) ;
@@ -918,6 +930,7 @@ begin
     variable intReadyBeforeValid : integer ;
     variable ReadyDelayCycles : integer ;
     variable ReadDataValidTimeOut     : integer ;
+    variable ReadID : AxiBus.ReadData.ID'subtype ; 
   begin
     AxiBus.ReadData.Ready <= '0' ;
     wait for 0 ns ; -- Allow Cov models to initialize 
@@ -965,6 +978,12 @@ begin
       -- capture data
       push(ReadDataFifo, AxiBus.ReadData.Data) ;
       Check(ReadResponseScoreboard, AxiBus.ReadData.Resp) ;
+      if (Get(Params, to_integer(CHECK_ID))) then
+        Check(ReadIDScoreboard, AxiBus.ReadData.ID) ;
+      else
+        -- ID is in the scoreboard, so POP it.
+        ReadID := pop(ReadIDScoreboard) ;
+      end if ; 
 
       increment(ReadDataReceiveCount) ;
       wait for 0 ns ; -- Allow ReadDataReceiveCount to update

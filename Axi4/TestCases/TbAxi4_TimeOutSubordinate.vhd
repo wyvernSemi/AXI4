@@ -101,6 +101,7 @@ begin
     variable PreviousErrorCount : AlertCountType ; 
   begin
     wait until nReset = '1' ;  
+    SetAxi4Options(ManagerRec, CHECK_ID, FALSE) ;
     WaitForClock(ManagerRec, 2) ; 
     
     PreviousErrorCount := GetAlertCount ; 

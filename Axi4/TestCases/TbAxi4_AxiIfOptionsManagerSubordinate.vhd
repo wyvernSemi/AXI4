@@ -535,14 +535,14 @@ begin
     wait for 1 ns ; 
     --------------------------------  Set #2
     SetAxi4Options(SubordinateRec, BRESP,  1) ;      -- config:  2 bits
-    SetAxi4Options(SubordinateRec, BID,   21) ;      -- config:  8 bits
+    SetAxi4Options(SubordinateRec, BID,    4) ;      -- config:  8 bits
     SetAxi4Options(SubordinateRec, BUSER, 22) ;      -- config:  8 bits
     
     --------------------------------  Get and Check #2
     GetAxi4Options(SubordinateRec, BRESP, IntOption) ;      -- config:  2 bits
     AffirmIfEqual(TbSubordinateID, IntOption,  1, "BRESP") ;    -- (OK, EXOK, SLVERR, DECERR)
     GetAxi4Options(SubordinateRec, BID, IntOption) ;        -- config:  8 bits
-    AffirmIfEqual(TbSubordinateID, IntOption,   21, "BID") ;  
+    AffirmIfEqual(TbSubordinateID, IntOption,  4, "BID") ;  
     GetAxi4Options(SubordinateRec, BUSER, IntOption) ;      -- config:  8 bits
     AffirmIfEqual(TbSubordinateID, IntOption, 22, "BUSER") ;  
     
@@ -562,14 +562,14 @@ begin
     wait for 1 ns ; 
     --------------------------------  Set #3
     SetAxi4Options(SubordinateRec, BRESP,  2) ;      -- config:  2 bits
-    SetAxi4Options(SubordinateRec, BID,   27) ;      -- config:  8 bits
+    SetAxi4Options(SubordinateRec, BID,   10) ;      -- config:  8 bits
     SetAxi4Options(SubordinateRec, BUSER, 28) ;      -- config:  8 bits
     
     --------------------------------  Get and Check #3
     GetAxi4Options(SubordinateRec, BRESP, IntOption) ;      -- config:  2 bits
     AffirmIfEqual(TbSubordinateID, IntOption,  2, "BRESP") ;    -- (OK, EXOK, SLVERR, DECERR)
     GetAxi4Options(SubordinateRec, BID, IntOption) ;        -- config:  8 bits
-    AffirmIfEqual(TbSubordinateID, IntOption,   27, "BID") ;  
+    AffirmIfEqual(TbSubordinateID, IntOption, 10, "BID") ;  
     GetAxi4Options(SubordinateRec, BUSER, IntOption) ;      -- config:  8 bits
     AffirmIfEqual(TbSubordinateID, IntOption, 28, "BUSER") ;  
     
@@ -613,14 +613,14 @@ begin
     wait for 1 ns ; 
     --------------------------------  Set #2
     SetAxi4Options(SubordinateRec, RRESP,  1) ;        -- config:  2 bits
-    SetAxi4Options(SubordinateRec, RID,    9) ;        -- config:  8 bits
+    SetAxi4Options(SubordinateRec, RID,    4) ;        -- config:  8 bits
     SetAxi4Options(SubordinateRec, RUSER, 10) ;        -- config:  8 bits
 
     --------------------------------  Get and Check #2
     GetAxi4Options(SubordinateRec, RRESP, IntOption) ;        -- config:  2 bits
     AffirmIfEqual(TbSubordinateID, IntOption,  1, "RRESP") ;  -- (OK, EXOK, SLVERR, DECERR)
     GetAxi4Options(SubordinateRec, RID, IntOption) ;          -- config:  8 bits
-    AffirmIfEqual(TbSubordinateID, IntOption,  9, "RID") ;  
+    AffirmIfEqual(TbSubordinateID, IntOption,  4, "RID") ;  
     GetAxi4Options(SubordinateRec, RUSER, IntOption) ;        -- config:  8 bits
     AffirmIfEqual(TbSubordinateID, IntOption, 10, "RUSER") ;  
     
@@ -638,14 +638,14 @@ begin
     wait for 1 ns ; 
     --------------------------------  Set #3
     SetAxi4Options(SubordinateRec, RRESP,  2) ;        -- config:  2 bits
-    SetAxi4Options(SubordinateRec, RID,   15) ;        -- config:  8 bits
+    SetAxi4Options(SubordinateRec, RID,   10) ;        -- config:  8 bits
     SetAxi4Options(SubordinateRec, RUSER, 16) ;        -- config:  8 bits
 
     --------------------------------  Get and Check #3
     GetAxi4Options(SubordinateRec, RRESP, IntOption) ;        -- config:  2 bits
     AffirmIfEqual(TbSubordinateID, IntOption,  2, "RRESP") ;  -- (OK, EXOK, SLVERR, DECERR)
     GetAxi4Options(SubordinateRec, RID, IntOption) ;          -- config:  8 bits
-    AffirmIfEqual(TbSubordinateID, IntOption, 15, "RID") ;  
+    AffirmIfEqual(TbSubordinateID, IntOption, 10, "RID") ;  
     GetAxi4Options(SubordinateRec, RUSER, IntOption) ;        -- config:  8 bits
     AffirmIfEqual(TbSubordinateID, IntOption, 16, "RUSER") ;  
 

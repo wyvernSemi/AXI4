@@ -97,6 +97,8 @@ package Axi4OptionsPkg is
     WRITE_DATA_FILTER_UNDRIVEN,
     WRITE_DATA_UNDRIVEN_VALUE,
 
+    CHECK_ID,
+
     -- Marker
     OPTIONS_MARKER,
 
@@ -780,6 +782,8 @@ package body Axi4OptionsPkg is
     -- Write Data Filtering
     SetAxi4Parameter(Params, WRITE_DATA_FILTER_UNDRIVEN,            TRUE) ;
     SetAxi4Parameter(Params, WRITE_DATA_UNDRIVEN_VALUE,             '0') ;
+
+    SetAxi4Parameter(Params, CHECK_ID,                              TRUE) ;
   end procedure InitAxiOptions ;
 
   ------------------------------------------------------------

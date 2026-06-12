@@ -142,7 +142,8 @@ log(TbManagerID, "Write Response Ready TimeOut test.  Trigger Ready TimeOut twic
     WaitForClock(ManagerRec, 10) ; 
     print("") ;  print("") ;  
 
-    ErrorsInjected    := (FAILURE => 4, ERROR => 2, WARNING => 0) ;
+--    ErrorsInjected    := (FAILURE => 4, ERROR => 2, WARNING => 0) ;
+    ErrorsInjected    := (FAILURE => 4, ERROR => 4, WARNING => 0) ;
     ExpectedErrors    <= ExpectedErrors + ErrorsInjected ; 
 
     ReportNonZeroAlerts ;
